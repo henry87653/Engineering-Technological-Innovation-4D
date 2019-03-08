@@ -1,0 +1,21 @@
+﻿生成启动时间为 2012/3/8 14:56:31。
+     1>项目“F:\交大\助教工作\CyberTorcs\user0\user0\user0.vcxproj”在节点 2 上(build 个目标)。
+     1>InitializeBuildStatus:
+         正在创建“Release\user0.unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+       ClCompile:
+         C:\Program Files\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _WINDOWS /D _USRDLL /D USER0_EXPORTS /D _WINDLL /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt user0.cpp
+         user0.cpp
+       Link:
+         C:\Program Files\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"F:\交大\助教工作\CyberTorcs\user0\Release\user0.dll" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /DEF:".\user0.def" /MANIFEST:NO /PDB:"F:\交大\助教工作\CyberTorcs\user0\Release\user0.pdb" /SUBSYSTEM:WINDOWS /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"F:\交大\助教工作\CyberTorcs\user0\Release\user0.lib" /MACHINE:X86 /DLL Release\user0.obj
+            正在创建库 F:\交大\助教工作\CyberTorcs\user0\Release\user0.lib 和对象 F:\交大\助教工作\CyberTorcs\user0\Release\user0.exp
+         正在生成代码
+         已完成代码的生成
+         user0.vcxproj -> F:\交大\助教工作\CyberTorcs\user0\Release\user0.dll
+       FinalizeBuildStatus:
+         正在删除文件“Release\user0.unsuccessfulbuild”。
+         正在对“Release\user0.lastbuildstate”执行 Touch 任务。
+     1>已完成生成项目“F:\交大\助教工作\CyberTorcs\user0\user0\user0.vcxproj”(build 个目标)的操作。
+
+生成成功。
+
+已用时间 00:00:09.39
