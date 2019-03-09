@@ -103,6 +103,9 @@ float expectspeed = 0;
 int accuc = 0;
 int roadTypeJudge = 0;
 int RoadTypeFlag = 0;
+#define xerror _midline[0][0]
+int Timer = 0;
+float StartErrorSum = 0;
 //******************************************************//
 
 //******************************Helping Functions*******************************//
@@ -148,13 +151,20 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	CircleFar = getR(_midline[70][0], _midline[70][1], _midline[90][0], _midline[90][1], _midline[110][0], _midline[110][1]);
 	CircleFoot = getR(_midline[1][0], _midline[1][1], _midline[2][0], _midline[2][1], _midline[3][0], _midline[3][1]);
 
-	printf("speed %f gearbox %d rpm %f 0m(%f, %f) 10m(%f, %f) deviation[1] %f\n", _speed, _gearbox, _rpm, _midline[0][0], _midline[0][1], _midline[10][0], _midline[10][1], deviation(1));
-
+	printf("speed %f gearbox %d Xerror %f  deviation[1] %f  start time %d  start error %f\n", _speed, _gearbox, _midline[0][0], deviation(1),Timer,StartErrorSum);
 
 	*cmdAcc = 0.5;
 	*cmdBrake = 0;
 	*cmdGear = 1;
 	*cmdSteer = -deviation(1)+0.3*_yaw;
+
+	//start up
+	if (_speed < 20 ||abs(xerror) > 0.5) {
+		*cmdAcc = 0.5;
+		*cmdSteer = (-deviation(1) + 0.3*_yaw);
+		Timer++;
+		StartErrorSum += abs(xerror);
+	}
 
 
 
