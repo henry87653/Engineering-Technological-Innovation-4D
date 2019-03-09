@@ -1,8 +1,0 @@
-﻿D:\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(377,5): warning MSB8004: Output 目录未以斜杠结尾。  此生成实例将添加斜杠，因为必须有这个斜杠才能正确计算 Output 目录。
-  driver_lead.cpp
-c:\users\henry\desktop\engineering practice and technological innovation-4d\driver_lead\driver_lead\driver_lead.cpp(85): warning C4305: “+=”: 从“double”到“float”截断
-c:\users\henry\desktop\engineering practice and technological innovation-4d\driver_lead\driver_lead\driver_lead.cpp(89): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-c:\users\henry\desktop\engineering practice and technological innovation-4d\driver_lead\driver_lead\driver_lead.cpp(93): warning C4305: “=”: 从“double”到“float”截断
-c:\users\henry\desktop\engineering practice and technological innovation-4d\driver_lead\driver_lead\driver_lead.cpp(95): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-    正在创建库 D:\CyberTORCS_2019Spring_Student\cyberfollow\driver_lead.lib 和对象 D:\CyberTORCS_2019Spring_Student\cyberfollow\driver_lead.exp
-  driver_lead.vcxproj -> D:\CyberTORCS_2019Spring_Student\cyberfollow\driver_lead.dll

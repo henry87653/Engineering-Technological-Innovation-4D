@@ -120,6 +120,7 @@ static void userDriverGetParam(float midline[200][2], float yaw, float yawrate, 
 }
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, int* cmdGear) {
 	//***************************************//
 	//初始参数设置//
@@ -236,9 +237,31 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		{
 			expectedSpeed = constrain(45,200,c.r*c.r*(-0.046)+c.r*5.3-59.66);
 >>>>>>> parent of 6760827... Replcace to Liu's Code
+=======
+static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, int* cmdGear){
+	if(parameterSet==false)		// Initialization Part
+	{
+		PIDParamSetter();
+	}
+	else
+	{
+		//ldx:we can modify
+
+		// Speed Control
+		/*
+		You can modify the limited speed in this module
+		Enjoy  -_-  
+		*/
+		startPoint = _speed * 0.445;
+		c = getR(_midline[startPoint][0],_midline[startPoint][1],_midline[startPoint+delta][0],_midline[startPoint+delta][1],_midline[startPoint+2*delta][0],_midline[startPoint+2*delta][1]);
+		if (c.r<=60)
+		{
+			expectedSpeed = constrain(45,200,c.r*c.r*(-0.046)+c.r*5.3-59.66);
+>>>>>>> parent of 6760827... Replcace to Liu's Code
 		}
 		else									//easy to accelerate AND nearest road straight
 		{
+<<<<<<< HEAD
 <<<<<<< HEAD
 			flag1 = 1;
 			//***************************************//
@@ -266,6 +289,8 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			}
 			case 3:
 =======
+=======
+>>>>>>> parent of 6760827... Replcace to Liu's Code
 			expectedSpeed = constrain(100,200,c.r*1.4);
 		}
 		curSpeedErr = expectedSpeed - _speed;
@@ -274,11 +299,15 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		{
 			
 			if (abs(*cmdSteer)<0.6)
+<<<<<<< HEAD
+>>>>>>> parent of 6760827... Replcace to Liu's Code
+=======
 >>>>>>> parent of 6760827... Replcace to Liu's Code
 			{
 				*cmdAcc = constrain(0.0,1.0,kp_s * curSpeedErr + ki_s * speedErrSum + offset);
 				*cmdBrake = 0;
 			}
+<<<<<<< HEAD
 <<<<<<< HEAD
 			printf("speedmode:%d \n", speedmode);
 			//***************************************//
@@ -287,6 +316,9 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			//***************************************//
 			//刹车控制模块//
 			if (_speed > expectspeed  && theflag == 0)
+=======
+			else if (abs(*cmdSteer)>0.70)
+>>>>>>> parent of 6760827... Replcace to Liu's Code
 =======
 			else if (abs(*cmdSteer)>0.70)
 >>>>>>> parent of 6760827... Replcace to Liu's Code
