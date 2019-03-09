@@ -164,10 +164,11 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	printf("c3 (1, 2, 3) r:%6.1f \n", c3.r);
 
 	minc = min(min(c.r, c1.r), c2.r);
+	printf("minc:%6.1f \n", minc);
 	printf("roadTypeJudge:%d \n", roadTypeJudge);	//ldx: can we divide roads into several kinds according to a well-defined(better-defined) minc?
 	if (_speed < 20) { *cmdGear = 1; *cmdAcc = 1; *cmdBrake = 0; *cmdSteer =0.3*(_yaw - 3.5 * atan2(_midline[1][0],_midline[1][1])); ++roadTypeJudge; }
 	else {
-		if (roadTypeJudge < 95 || (c3.r<100 && flag1 == 0))
+		if (roadTypeJudge < 95 || (c3.r<100 && flag1 == 0))            //acc time > 95(hard to accelarate) OR nearest road not straight
 		{
 			//***************************************//
 			//速度控制模块//
@@ -175,27 +176,29 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			{
 				if (_speed < 80) { speedmode = 1; }
 				//else if(c1.r>300 && c2.r > 300 && c.r > 300) { speedmode = 3; }100 100 100
-				else if (c1.r>60 && c2.r > 60 && c.r > 60) { speedmode = 3; }
+				else if (c1.r>60 && c2.r > 60 && c.r > 60) { speedmode = 3; }//speedmode = 3 only when road is straight and speed > 80
 				else { speedmode = 1; }
 			}
+			printf("speedmode:%d", speedmode);
+
 			switch (speedmode)
 			{
 			case 1:
 			{
-				expectspeed = min(1.5*c0.r, 80);
+				expectspeed = min(1.5*c0.r, 80);//c0 (10, 20, 30)
 				if (c0.r < 50)*cmdSteer = 2 * (_yaw - 3.0 *atan2(_midline[1][0], _midline[1][1]));
 				else if (c0.r < 80) {*cmdSteer = 2 * (_yaw - 2.9 *atan2(_midline[1][0], _midline[1][1]) - 0.1*(_midline[5][0])); expectspeed = min(1.5*c0.r, 80); }
 				else if (c0.r > 120){ *cmdSteer = 2 * (_yaw - 2.8 *atan2(_midline[1][0], _midline[1][1]) - 0.2*_midline[5][0]); expectspeed = min(1.5*c0.r, 80) ; }
 				else { *cmdSteer = 2 * (_yaw - 2.8 *atan2(_midline[1][0], _midline[1][1]) - 0.2*_midline[5][0]); expectspeed = min(1.5*c0.r, 80); }
-				if (c0.r < 65) accuc = 1;
+				if (c0.r < 65) accuc = 1;//ldx:what is accuc??
 				else accuc = 0;
 				break;
 			}
 			case 3:
 			{
-				expectspeed = min(0.8 * min(c.r, c2.r), 160);
+				expectspeed = min(0.8 * min(c.r, c2.r), 160);//c startPoint + 0, + delta, + 2 * delta; c2 (70, 90, 110)
 				*cmdSteer = 2* (_yaw - 3.2  *atan2(_midline[1][0], _midline[1][1])-0.1*_midline[7][0]);
-				if (min(c1.r, min(c.r, c2.r)) < 350 || _speed > expectspeed)
+				if (min(c1.r, min(c.r, c2.r)) < 350 || _speed > expectspeed)//not straight OR overspeed
 				{
 					speedmode = 1;
 					accuc = 1;
@@ -205,13 +208,14 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 				break;
 			}
 			}
-			printf("%f \n", _midline[0][0]);
+			printf("expectspeed:%f \n", expectspeed);
+			printf("x_error:%f \n", _midline[0][0]);
 			//***************************************//
 			//油门控制模块//
 			*cmdAcc = 0.2;
 			//************************************//
 			//刹车控制模块//
-			if (_speed > expectspeed  && theflag == 0)
+			if (_speed > expectspeed  && theflag == 0)//overspeed OR what is theflag??
 			{
 				*cmdBrake = (_speed - expectspeed) / 80;
 				theflag = 1;
@@ -221,12 +225,12 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 				*cmdBrake = 0;
 				theflag = 0;
 			}
-			if (abs(*cmdSteer) > 0.2)*cmdBrake = 2* *cmdBrake / 3;
+			if (abs(*cmdSteer) > 0.2)*cmdBrake = 2* *cmdBrake / 3;//ldx:I do not understand?????
 			//***************************************//
 			updateGear(cmdGear);
 			roadTypeJudge = 94;
 		}
-		else
+		else									//easy to accelerate AND nearest road straight
 		{
 			flag1 = 1;
 			//***************************************//
@@ -244,6 +248,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			{
 				expectspeed = min(1.9*c0.r, 65);
 				if (c0.r<50)*cmdSteer = (_yaw - 9 * atan2(_midline[1][0], _midline[1][1]) - 0.1*_midline[5][0]);
+				//ldx:Note that yaw and atan2 have negative signs
 				else if (c0.r < 80) *cmdSteer = _yaw - 8.9 * atan2(_midline[1][0], _midline[1][1]) - 0.1*_midline[5][0];
 				else *cmdSteer = (_yaw - 8.8 * atan2(_midline[1][0], _midline[1][1])) - 0.2*_midline[5][0];
 				//*cmdSteer = (_yaw - 9 * atan2(_midline[1][0],_midline[1][1]));
@@ -266,7 +271,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 				break;
 			}
 			}
-			//printf("%d \n", speedmode);
+			printf("speedmode:%d \n", speedmode);
 			//***************************************//
 			//油门控制模块//
 			*cmdAcc = 0.17;
