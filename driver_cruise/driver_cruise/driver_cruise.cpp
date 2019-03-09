@@ -7,7 +7,7 @@
 //		  version :1.0.0
 //        description :				????
 //
-//        modified by Henry Lu at  March/9/2019 15:55
+//        modified by Henry Lu at  March/9/2019 21:52
 //        https://github.com/henry87653/Engineering-Technological-Innovation-4D
 //
 //============================================================================================
@@ -90,7 +90,7 @@ double D_err;//direction error					             //
 double D_errDiff = 0;//direction difference(Differentiation) //
 double D_errSum=0;//sum of direction error(Integration)      //
 // Speed Control Variables								     //
-circle CircleSpeed;												     //
+circle CircleSpeed, CircleNear, CircleMiddle, CircleFar, CircleFoot;												     //
 double expectedSpeed;//      							     //
 double curSpeedErr;//speed error   		                     //
 double speedErrSum=0;//sum of speed error(Integration)       //
@@ -122,6 +122,7 @@ circle getR(float x1, float y1, float x2, float y2, float x3, float y3);		//
 
 static void userDriverGetParam(float midline[200][2], float yaw, float yawrate, float speed, float acc, float width, int gearbox, float rpm){
 	/* write your own code here */
+	/* ldx:These input parameters are enough! No need to add. */
 	
 	for (int i = 0; i< 200; ++i) _midline[i][0] = midline[i][0], _midline[i][1] = midline[i][1];
 	_yaw = yaw;
@@ -155,31 +156,46 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		CircleFoot = getR(_midline[1][0], _midline[1][1], _midline[2][0], _midline[2][1], _midline[3][0], _midline[3][1]);
 		
 		//CircleSpeed (startPoint+0, + delta, + 2 * delta);
+		//CircleNear (10,20,30)  CircleMiddle(10,30,50)  CircleFar(70,90,110)  CircleFoot(1,2,3)
+		printf("CircleNear(10,20,30):%4.1f \t CircleMiddle(10,30,50):%4.1f \t  CircleFar(70,90,110):%4.1f \t  CircleFoot(1,2,3):%4.1f \t", CircleNear.r, CircleMiddle.r, CircleFar.r, CircleFoot.r);
+
+		//expectedSpeed need to be modified (using the ABOVE 5 circles)
+		/*
 		if (CircleSpeed.r<=60)//road is very curved
 		{
 			expectedSpeed = constrain(45,200,CircleSpeed.r*CircleSpeed.r*(-0.046)+CircleSpeed.r*5.3-59.66);
 		}
-		else
+		else			//road is not so curved
 		{
 			expectedSpeed = constrain(100,200,CircleSpeed.r*1.4);
 		}
+		*/
+
+		expectedSpeed = 80;//temporary
+
+		printf("expectedSpeed:%f\t", expectedSpeed);
+		printf("curSpeedErr:%f\t", curSpeedErr);
+		printf("speedErrSum:%f\t", speedErrSum);
+		//printf(":%f\t", );
 		curSpeedErr = expectedSpeed - _speed;
 		speedErrSum = 0.1 * speedErrSum + curSpeedErr;
 		if (curSpeedErr > 0)			//lackspeed
 		{
-			//1 rad = 60 deg
-			if (abs(*cmdSteer)<0.6)//<36 deg
+			if (abs(*cmdSteer)<0.6)//-1.0 <= *cmdSteer <=  1.0; when *cmdSteer is small
 			{
+				printf("*cmdSteer small\t");
 				*cmdAcc = constrain(0.0,1.0,kp_s * curSpeedErr + ki_s * speedErrSum + offset);
 				*cmdBrake = 0;
 			}
-			else if (abs(*cmdSteer)>0.70)//<42 deg
+			else if (abs(*cmdSteer)>0.70)//when *cmdSteer is large
 			{
+				printf("*cmdSteer large\t");
 				*cmdAcc = 0.005 + offset;
 				*cmdBrake = 0;
 			}
-			else//36 deg through 42 deg
+			else//when *cmdSteer is in the middle ( 0.6 to 0.7 )
 			{
+				printf("*cmdSteer middle\t");
 				*cmdAcc = 0.11 + offset;
 				*cmdBrake = 0;
 			}
@@ -190,10 +206,14 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			*cmdBrake = constrain(0.0,0.8,-kp_s *curSpeedErr/5 - offset/3);
 			*cmdAcc = 0;
 		}
+		printf("*cmdSteer:%5.4f\t", *cmdSteer);
+		printf("*cmdAcc:%5.4f\t", *cmdAcc);
+		printf("*cmdBrake:%5.4f\t", *cmdBrake);
+		printf("cmdGear:%d\t", *cmdGear);//ldx:can be no asterisk(*)???
 
 		updateGear(cmdGear);//ldx:huan dang
 		
-		//important algorithm below
+		//ldx:important algorithm below: error model
 		/******************************************Modified by Yuan Wei********************************************/
 		/*
 		Please select a error model and coding for it here, you can modify the steps to get a new 'D_err',this is just a sample.
@@ -201,25 +221,30 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		Enjoy  -_-  
 		*/
 		// Direction Control		
-		//set the param of PID controller
-        kp_d = 1;
+		//set the param of PID controller  //ldx: reset all 3 param below
+        kp_d = 1;//ldx: modified
         ki_d = 0;
 		kd_d = 0;
 
-		//get the error 
+		//get the error //ldx: modify this to get a better D_err function?
 		D_err = -atan2(_midline[5][0],_midline[5][1]);//only track the aiming point on the middle line
+		//ldx: modified ABOVE D_err
 
 		//the differential and integral operation 
 		D_errDiff = D_err - Tmp;
 		D_errSum = D_errSum + D_err;
 		Tmp = D_err;
 
-		//set the error and get the cmdSteer
+		//print important param?   printf(":%f\t", );
+		printf("D_errDiff%5.2f\t", D_errDiff);
+		printf("D_errSum:%5.2f\t", D_errSum);
+
+		//set the error and get the cmdSteer // get the NEW cmdSteer?
 		*cmdSteer =constrain(-1.0,1.0,kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
 
 		//print some useful info on the terminal
-		printf("D_err : %f \n", D_err);
-		printf("cmdSteer : %f \n", *cmdSteer);	
+		printf("D_err : %5.2f \n", D_err);
+		//printf("cmdSteer : %f \n", *cmdSteer);	
 		/******************************************End by Yuan Wei********************************************/
 	}
 }
@@ -230,7 +255,7 @@ void PIDParamSetter()
 		kp_s=0.02;
 		ki_s=0;
 		kd_s=0;
-		kp_d=1.35;
+		kp_d=0.5;//ldx: modified
 		ki_d=0.151;
 		kd_d=0.10;
 		parameterSet = true;
