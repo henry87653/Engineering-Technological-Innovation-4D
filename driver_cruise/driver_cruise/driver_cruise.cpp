@@ -3,13 +3,13 @@
      
 	 DO NOT MODIFY CODES BELOW!
 */
+
 #ifdef _WIN32
 #include <windows.h>
 #endif
 
 #include "driver_cruise.h"
 #include "stdio.h"
-#include <cmath>
 
 #define PI 3.141592653589793238462643383279
 
@@ -90,21 +90,6 @@ double tmp;												//
 bool flag=true;											//
 double offset=0;										//
 double Tmp = 0;
-
-//Self-defined paramaters below	//
-int theflag = 0;				//
-int theflag1 = 0;				//
-circle c0;						//
-circle c1;						//
-circle c2;						//
-circle c3;						//
-int speedmode = 1;				//
-float expectspeed = 0;			//
-int accuc = 0;					//
-int roadTypeJudge = 0;			//
-int flag1 = 0;					//
-//Self-defined paramaters above	//
-
 //******************************************************//
 
 //******************************Helping Functions*******************************//
@@ -134,6 +119,7 @@ static void userDriverGetParam(float midline[200][2], float yaw, float yawrate, 
 	_gearbox = gearbox;
 }
 
+<<<<<<< HEAD
 static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, int* cmdGear) {
 	//***************************************//
 	//初始参数设置//
@@ -229,9 +215,31 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			//***************************************//
 			updateGear(cmdGear);
 			roadTypeJudge = 94;
+=======
+static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, int* cmdGear){
+	if(parameterSet==false)		// Initialization Part
+	{
+		PIDParamSetter();
+	}
+	else
+	{
+		//ldx:we can modify
+
+		// Speed Control
+		/*
+		You can modify the limited speed in this module
+		Enjoy  -_-  
+		*/
+		startPoint = _speed * 0.445;
+		c = getR(_midline[startPoint][0],_midline[startPoint][1],_midline[startPoint+delta][0],_midline[startPoint+delta][1],_midline[startPoint+2*delta][0],_midline[startPoint+2*delta][1]);
+		if (c.r<=60)
+		{
+			expectedSpeed = constrain(45,200,c.r*c.r*(-0.046)+c.r*5.3-59.66);
+>>>>>>> parent of 6760827... Replcace to Liu's Code
 		}
 		else									//easy to accelerate AND nearest road straight
 		{
+<<<<<<< HEAD
 			flag1 = 1;
 			//***************************************//
 			//速度控制模块//
@@ -257,20 +265,21 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 				break;
 			}
 			case 3:
+=======
+			expectedSpeed = constrain(100,200,c.r*1.4);
+		}
+		curSpeedErr = expectedSpeed - _speed;
+		speedErrSum = 0.1 * speedErrSum + curSpeedErr;
+		if (curSpeedErr > 0)
+		{
+			
+			if (abs(*cmdSteer)<0.6)
+>>>>>>> parent of 6760827... Replcace to Liu's Code
 			{
-				expectspeed = min(0.7*((min(c.r, c2.r)) - 30), 160);
-				//*cmdSteer = (_yaw - 3 * atan2(_midline[12][0], _midline[12][1]));
-				*cmdSteer = (_yaw - 8.9 * atan2(_midline[1][0], _midline[1][1]) - 0.6*atan2(_midline[8][0], _midline[8][1]));
-				if (min(c1.r, min(c.r, c2.r)) < 180 || _speed > expectspeed)
-				{
-					speedmode = 1;
-					accuc = 1;
-				}
-				else
-					accuc = 0;
-				break;
+				*cmdAcc = constrain(0.0,1.0,kp_s * curSpeedErr + ki_s * speedErrSum + offset);
+				*cmdBrake = 0;
 			}
-			}
+<<<<<<< HEAD
 			printf("speedmode:%d \n", speedmode);
 			//***************************************//
 			//油门控制模块//
@@ -278,107 +287,58 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			//***************************************//
 			//刹车控制模块//
 			if (_speed > expectspeed  && theflag == 0)
+=======
+			else if (abs(*cmdSteer)>0.70)
+>>>>>>> parent of 6760827... Replcace to Liu's Code
 			{
-				*cmdBrake = (_speed - expectspeed) / 45;
-				theflag = 1;
+				*cmdAcc = 0.005 + offset;
+				*cmdBrake = 0;
 			}
 			else
 			{
+				*cmdAcc = 0.11 + offset;
 				*cmdBrake = 0;
-				theflag = 0;
 			}
-			if (abs(*cmdSteer) > 0.2)*cmdBrake = 2 * *cmdBrake / 3;
-			//***************************************//
-			updateGear(cmdGear);
+		
 		}
+		else if (curSpeedErr < 0)
+		{
+			*cmdBrake = constrain(0.0,0.8,-kp_s *curSpeedErr/5 - offset/3);
+			*cmdAcc = 0;
+		}
+
+		updateGear(cmdGear);//ldx:huan dang
+		
+		//important algorithm below
+		/******************************************Modified by Yuan Wei********************************************/
+		/*
+		Please select a error model and coding for it here, you can modify the steps to get a new 'D_err',this is just a sample.
+		Once you have chose the error model , you can rectify the value of PID to improve your control performance.
+		Enjoy  -_-  
+		*/
+		// Direction Control		
+		//set the param of PID controller
+        kp_d = 1;
+        ki_d = 0;
+		kd_d = 0;
+
+		//get the error 
+		D_err = -atan2(_midline[5][0],_midline[5][1]);//only track the aiming point on the middle line
+
+		//the differential and integral operation 
+		D_errDiff = D_err - Tmp;
+		D_errSum = D_errSum + D_err;
+		Tmp = D_err;
+
+		//set the error and get the cmdSteer
+		*cmdSteer =constrain(-1.0,1.0,kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
+
+		//print some useful info on the terminal
+		printf("D_err : %f \n", D_err);
+		printf("cmdSteer %f \n", *cmdSteer);	
+		/******************************************End by Yuan Wei********************************************/
 	}
-	//printf("speedmode %f c1.r %f \n", c.r, c1.r);
-	
-
 }
-
-//static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, int* cmdGear) {
-//	if (parameterSet == false)		// Initialization Part
-//	{
-//		PIDParamSetter();
-//	}
-//	else
-//	{
-//		// Speed Control
-//		/*
-//		You can modify the limited speed in this module
-//		Enjoy  -_-
-//		*/
-//		startPoint = _speed * 0.445;
-//		c = getR(_midline[startPoint][0], _midline[startPoint][1], _midline[startPoint + delta][0], _midline[startPoint + delta][1], _midline[startPoint + 2 * delta][0], _midline[startPoint + 2 * delta][1]);
-//		if (c.r <= 60)
-//		{
-//			expectedSpeed = constrain(45, 200, c.r*c.r*(-0.046) + c.r*5.3 - 59.66);
-//		}
-//		else
-//		{
-//			expectedSpeed = constrain(100, 200, c.r*1.4);
-//		}
-//		curSpeedErr = expectedSpeed - _speed;+
-//		speedErrSum = 0.1 * speedErrSum + curSpeedErr;
-//		if (curSpeedErr > 0)
-//		{
-//
-//			if (abs(*cmdSteer)<0.6)
-//			{
-//				*cmdAcc = constrain(0.0, 1.0, kp_s * curSpeedErr + ki_s * speedErrSum + offset);
-//				*cmdBrake = 0;
-//			}
-//			else if (abs(*cmdSteer)>0.70)
-//			{
-//				*cmdAcc = 0.005;
-//				*cmdBrake = 0;
-//			}
-//			else
-//			{
-//				*cmdAcc = 0.11;
-//				*cmdBrake = 0;
-//			}
-//
-//		}
-//		else if (curSpeedErr < 0)
-//		{
-//			*cmdBrake = constrain(0.0, 0.8, -kp_s * curSpeedErr / 5 - offset / 3);
-//			*cmdAcc = 0;
-//		}
-//
-//		updateGear(cmdGear);
-//
-//		/******************************************Modified by Yuan Wei********************************************/
-//		/*
-//		Please select a error model and coding for it here, you can modify the steps to get a new 'D_err',this is just a sample.
-//		Once you have chose the error model , you can rectify the value of PID to improve your control performance.
-//		Enjoy  -_-
-//		*/
-//		// Direction Control		
-//		//set the param of PID controller
-//		kp_d = 1.6;
-//		ki_d = 0.02;
-//		kd_d = 3;
-//
-//		//get the error 
-//		D_err = -atan2(_midline[25][0], _midline[25][1]);//only track the aiming point on the middle line
-//
-//														 //the differential and integral operation 
-//		D_errDiff = D_err - Tmp;
-//		D_errSum = D_errSum + D_err;
-//		Tmp = D_err;
-//
-//		//set the error and get the cmdSteer
-//		*cmdSteer = constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
-//
-//		//print some useful info on the terminal
-//		printf("D_err : %f \n", D_err);
-//		printf("cmdSteer %f \n", *cmdSteer);
-//		/******************************************End by Yuan Wei********************************************/
-//	}
-//}
-
 
 void PIDParamSetter()
 {
