@@ -1,3 +1,17 @@
+//============================================================================================
+//
+//        Copyright (C) 2019
+//        All rights reserved
+//
+//        filename :driver_cruise.cpp
+//		  version :1.0.0
+//        description :				????
+//
+//        modified by Henry Lu at  March/9/2019 15:55
+//        https://github.com/henry87653/Engineering-Technological-Innovation-4D
+//
+//============================================================================================
+
 /*      
      WARNING !
      
@@ -76,7 +90,7 @@ double D_err;//direction error					             //
 double D_errDiff = 0;//direction difference(Differentiation) //
 double D_errSum=0;//sum of direction error(Integration)      //
 // Speed Control Variables								     //
-circle c;												     //
+circle CircleSpeed;												     //
 double expectedSpeed;//      							     //
 double curSpeedErr;//speed error   		                     //
 double speedErrSum=0;//sum of speed error(Integration)       //
@@ -119,104 +133,6 @@ static void userDriverGetParam(float midline[200][2], float yaw, float yawrate, 
 	_gearbox = gearbox;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, int* cmdGear) {
-	//***************************************//
-	//初始参数设置//
-	float thedegree = atan2(_midline[30][0], _midline[30][1]);//they get the degree 30 m ahead (in the midline)
-	double minc = 0;
-	//startPoint = min(160, _speed * speedmode*0.15);
-	startPoint = _speed * 0.25;
-	c = getR(_midline[startPoint][0], _midline[startPoint][1], _midline[startPoint + delta][0], _midline[startPoint + delta][1], _midline[startPoint + 2 * delta][0], _midline[startPoint + 2 * delta][1]);
-	c0 = getR(_midline[10][0], _midline[10][1], _midline[20][0], _midline[20][1], _midline[30][0], _midline[30][1]);
-	c1 = getR(_midline[10][0], _midline[10][1], _midline[30][0], _midline[30][1], _midline[50][0], _midline[50][1]);
-	c2 = getR(_midline[70][0], _midline[70][1], _midline[90][0], _midline[90][1], _midline[110][0], _midline[110][1]);
-	c3 = getR(_midline[1][0], _midline[1][1], _midline[2][0], _midline[2][1], _midline[3][0], _midline[3][1]);
-
-	//ldx:
-	//c startPoint + 0, + delta, + 2 * delta:
-	//c0 (10, 20, 30) r:
-	//c1 (10, 30, 50) r:
-	//c2 (70, 90, 110) r:
-	//c3 (1, 2, 3) r:
-	
-	//ldx:they judge the road type by minimum radius of circles c, c1 and c2. Can we improve here?
-
-	//ldx:print the paraters to see how large they are.
-	printf("\n c startPoint + 0, + delta, + 2 * delta r:%6.1f \n", c.r);
-	printf("c0 (10, 20, 30) r:%6.1f \n", c0.r);
-	printf("c1 (10, 30, 50) r:%6.1f \n", c1.r);
-	printf("c2 (70, 90, 110) r:%6.1f \n", c2.r);
-	printf("c3 (1, 2, 3) r:%6.1f \n", c3.r);
-
-	minc = min(min(c.r, c1.r), c2.r);
-	printf("minc:%6.1f \n", minc);
-	printf("roadTypeJudge:%d \n", roadTypeJudge);	//ldx: can we divide roads into several kinds according to a well-defined(better-defined) minc?
-	if (_speed < 20) { *cmdGear = 1; *cmdAcc = 1; *cmdBrake = 0; *cmdSteer =0.3*(_yaw - 3.5 * atan2(_midline[1][0],_midline[1][1])); ++roadTypeJudge; }
-	else {
-		if (roadTypeJudge < 95 || (c3.r<100 && flag1 == 0))            //acc time > 95(hard to accelarate) OR nearest road not straight
-		{
-			//***************************************//
-			//速度控制模块//
-			if (accuc == 0)
-			{
-				if (_speed < 80) { speedmode = 1; }
-				//else if(c1.r>300 && c2.r > 300 && c.r > 300) { speedmode = 3; }100 100 100
-				else if (c1.r>60 && c2.r > 60 && c.r > 60) { speedmode = 3; }//speedmode = 3 only when road is straight and speed > 80
-				else { speedmode = 1; }
-			}
-			printf("speedmode:%d", speedmode);
-
-			switch (speedmode)
-			{
-			case 1:
-			{
-				expectspeed = min(1.5*c0.r, 80);//c0 (10, 20, 30)
-				if (c0.r < 50)*cmdSteer = 2 * (_yaw - 3.0 *atan2(_midline[1][0], _midline[1][1]));
-				else if (c0.r < 80) {*cmdSteer = 2 * (_yaw - 2.9 *atan2(_midline[1][0], _midline[1][1]) - 0.1*(_midline[5][0])); expectspeed = min(1.5*c0.r, 80); }
-				else if (c0.r > 120){ *cmdSteer = 2 * (_yaw - 2.8 *atan2(_midline[1][0], _midline[1][1]) - 0.2*_midline[5][0]); expectspeed = min(1.5*c0.r, 80) ; }
-				else { *cmdSteer = 2 * (_yaw - 2.8 *atan2(_midline[1][0], _midline[1][1]) - 0.2*_midline[5][0]); expectspeed = min(1.5*c0.r, 80); }
-				if (c0.r < 65) accuc = 1;//ldx:what is accuc??
-				else accuc = 0;
-				break;
-			}
-			case 3:
-			{
-				expectspeed = min(0.8 * min(c.r, c2.r), 160);//c startPoint + 0, + delta, + 2 * delta; c2 (70, 90, 110)
-				*cmdSteer = 2* (_yaw - 3.2  *atan2(_midline[1][0], _midline[1][1])-0.1*_midline[7][0]);
-				if (min(c1.r, min(c.r, c2.r)) < 350 || _speed > expectspeed)//not straight OR overspeed
-				{
-					speedmode = 1;
-					accuc = 1;
-				}
-				else
-					accuc = 0;
-				break;
-			}
-			}
-			printf("expectspeed:%f \n", expectspeed);
-			printf("x_error:%f \n", _midline[0][0]);
-			//***************************************//
-			//油门控制模块//
-			*cmdAcc = 0.2;
-			//************************************//
-			//刹车控制模块//
-			if (_speed > expectspeed  && theflag == 0)//overspeed OR what is theflag??
-			{
-				*cmdBrake = (_speed - expectspeed) / 80;
-				theflag = 1;
-			}
-			else
-			{
-				*cmdBrake = 0;
-				theflag = 0;
-			}
-			if (abs(*cmdSteer) > 0.2)*cmdBrake = 2* *cmdBrake / 3;//ldx:I do not understand?????
-			//***************************************//
-			updateGear(cmdGear);
-			roadTypeJudge = 94;
-=======
 static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, int* cmdGear){
 	if(parameterSet==false)		// Initialization Part
 	{
@@ -232,108 +148,44 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		Enjoy  -_-  
 		*/
 		startPoint = _speed * 0.445;
-		c = getR(_midline[startPoint][0],_midline[startPoint][1],_midline[startPoint+delta][0],_midline[startPoint+delta][1],_midline[startPoint+2*delta][0],_midline[startPoint+2*delta][1]);
-		if (c.r<=60)
+		CircleSpeed = getR(_midline[startPoint][0],_midline[startPoint][1],_midline[startPoint+delta][0],_midline[startPoint+delta][1],_midline[startPoint+2*delta][0],_midline[startPoint+2*delta][1]);
+		CircleNear = getR(_midline[10][0], _midline[10][1], _midline[20][0], _midline[20][1], _midline[30][0], _midline[30][1]);
+		CircleMiddle = getR(_midline[10][0], _midline[10][1], _midline[30][0], _midline[30][1], _midline[50][0], _midline[50][1]);
+		CircleFar = getR(_midline[70][0], _midline[70][1], _midline[90][0], _midline[90][1], _midline[110][0], _midline[110][1]);
+		CircleFoot = getR(_midline[1][0], _midline[1][1], _midline[2][0], _midline[2][1], _midline[3][0], _midline[3][1]);
+		
+		//CircleSpeed (startPoint+0, + delta, + 2 * delta);
+		if (CircleSpeed.r<=60)//road is very curved
 		{
-			expectedSpeed = constrain(45,200,c.r*c.r*(-0.046)+c.r*5.3-59.66);
->>>>>>> parent of 6760827... Replcace to Liu's Code
-=======
-static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, int* cmdGear){
-	if(parameterSet==false)		// Initialization Part
-	{
-		PIDParamSetter();
-	}
-	else
-	{
-		//ldx:we can modify
-
-		// Speed Control
-		/*
-		You can modify the limited speed in this module
-		Enjoy  -_-  
-		*/
-		startPoint = _speed * 0.445;
-		c = getR(_midline[startPoint][0],_midline[startPoint][1],_midline[startPoint+delta][0],_midline[startPoint+delta][1],_midline[startPoint+2*delta][0],_midline[startPoint+2*delta][1]);
-		if (c.r<=60)
-		{
-			expectedSpeed = constrain(45,200,c.r*c.r*(-0.046)+c.r*5.3-59.66);
->>>>>>> parent of 6760827... Replcace to Liu's Code
+			expectedSpeed = constrain(45,200,CircleSpeed.r*CircleSpeed.r*(-0.046)+CircleSpeed.r*5.3-59.66);
 		}
-		else									//easy to accelerate AND nearest road straight
+		else
 		{
-<<<<<<< HEAD
-<<<<<<< HEAD
-			flag1 = 1;
-			//***************************************//
-			//速度控制模块//
-
-			if (accuc == 0)
-			{
-				if (_speed < 68) { speedmode = 1; }
-				else if (c1.r>300 && c2.r > 300 && c.r > 300) { speedmode = 3; }
-				else { speedmode = 1; }
-			}
-			switch (speedmode)
-			{
-			case 1:
-			{
-				expectspeed = min(1.9*c0.r, 65);
-				if (c0.r<50)*cmdSteer = (_yaw - 9 * atan2(_midline[1][0], _midline[1][1]) - 0.1*_midline[5][0]);
-				//ldx:Note that yaw and atan2 have negative signs
-				else if (c0.r < 80) *cmdSteer = _yaw - 8.9 * atan2(_midline[1][0], _midline[1][1]) - 0.1*_midline[5][0];
-				else *cmdSteer = (_yaw - 8.8 * atan2(_midline[1][0], _midline[1][1])) - 0.2*_midline[5][0];
-				//*cmdSteer = (_yaw - 9 * atan2(_midline[1][0],_midline[1][1]));
-				if (c0.r < 65) accuc = 1;
-				else accuc = 0;
-				break;
-			}
-			case 3:
-=======
-=======
->>>>>>> parent of 6760827... Replcace to Liu's Code
-			expectedSpeed = constrain(100,200,c.r*1.4);
+			expectedSpeed = constrain(100,200,CircleSpeed.r*1.4);
 		}
 		curSpeedErr = expectedSpeed - _speed;
 		speedErrSum = 0.1 * speedErrSum + curSpeedErr;
-		if (curSpeedErr > 0)
+		if (curSpeedErr > 0)			//lackspeed
 		{
-			
-			if (abs(*cmdSteer)<0.6)
-<<<<<<< HEAD
->>>>>>> parent of 6760827... Replcace to Liu's Code
-=======
->>>>>>> parent of 6760827... Replcace to Liu's Code
+			//1 rad = 60 deg
+			if (abs(*cmdSteer)<0.6)//<36 deg
 			{
 				*cmdAcc = constrain(0.0,1.0,kp_s * curSpeedErr + ki_s * speedErrSum + offset);
 				*cmdBrake = 0;
 			}
-<<<<<<< HEAD
-<<<<<<< HEAD
-			printf("speedmode:%d \n", speedmode);
-			//***************************************//
-			//油门控制模块//
-			*cmdAcc = 0.17;
-			//***************************************//
-			//刹车控制模块//
-			if (_speed > expectspeed  && theflag == 0)
-=======
-			else if (abs(*cmdSteer)>0.70)
->>>>>>> parent of 6760827... Replcace to Liu's Code
-=======
-			else if (abs(*cmdSteer)>0.70)
->>>>>>> parent of 6760827... Replcace to Liu's Code
+			else if (abs(*cmdSteer)>0.70)//<42 deg
 			{
 				*cmdAcc = 0.005 + offset;
 				*cmdBrake = 0;
 			}
-			else
+			else//36 deg through 42 deg
 			{
 				*cmdAcc = 0.11 + offset;
 				*cmdBrake = 0;
 			}
 		
 		}
-		else if (curSpeedErr < 0)
+		else if (curSpeedErr < 0)		//overspeed
 		{
 			*cmdBrake = constrain(0.0,0.8,-kp_s *curSpeedErr/5 - offset/3);
 			*cmdAcc = 0;
@@ -367,7 +219,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 		//print some useful info on the terminal
 		printf("D_err : %f \n", D_err);
-		printf("cmdSteer %f \n", *cmdSteer);	
+		printf("cmdSteer : %f \n", *cmdSteer);	
 		/******************************************End by Yuan Wei********************************************/
 	}
 }
@@ -385,6 +237,7 @@ void PIDParamSetter()
 	
 }
 
+/**********************************ldx: NO NEED TO MODIFY THE Helping Functions BELOW**********************************/
 void updateGear(int *cmdGear)
 {
 	if (_gearbox == 1)
@@ -506,4 +359,4 @@ circle getR(float x1, float y1, float x2, float y2, float x3, float y3)
 	circle tmp = {r,sign};
 	return tmp;
 }
-
+/**********************************ldx: NO NEED TO MODIFY THE Helping Functions ABOVE**********************************/

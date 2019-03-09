@@ -1,0 +1,23 @@
+﻿生成启动时间为 2013/3/15 8:56:35。
+     1>项目“F:\交大\助教工作\driver_on_hand\driver_on_hand\driver_on_hand.vcxproj”在节点 2 上(rebuild 个目标)。
+     1>_PrepareForClean:
+         正在删除文件“Release\driver_on_hand.lastbuildstate”。
+       InitializeBuildStatus:
+         正在创建“Release\driver_on_hand.unsuccessfulbuild”，因为已指定“AlwaysCreate”。
+       ClCompile:
+         D:\Program Files\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _WINDOWS /D _USRDLL /D USER0_EXPORTS /D _WINDLL /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Release\\" /Fd"Release\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt driver_on_hand.cpp
+         driver_on_hand.cpp
+       Link:
+         D:\Program Files\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"F:\交大\助教工作\driver_on_hand\Release\driver_on_hand.dll" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /DEF:".\driver_on_hand.def" /MANIFEST:NO /PDB:"F:\交大\助教工作\driver_on_hand\Release\driver_on_hand.pdb" /SUBSYSTEM:WINDOWS /OPT:REF /OPT:ICF /LTCG /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"F:\交大\助教工作\driver_on_hand\Release\driver_on_hand.lib" /MACHINE:X86 /DLL Release\driver_on_hand.obj
+            正在创建库 F:\交大\助教工作\driver_on_hand\Release\driver_on_hand.lib 和对象 F:\交大\助教工作\driver_on_hand\Release\driver_on_hand.exp
+         正在生成代码
+         已完成代码的生成
+         driver_on_hand.vcxproj -> F:\交大\助教工作\driver_on_hand\Release\driver_on_hand.dll
+       FinalizeBuildStatus:
+         正在删除文件“Release\driver_on_hand.unsuccessfulbuild”。
+         正在对“Release\driver_on_hand.lastbuildstate”执行 Touch 任务。
+     1>已完成生成项目“F:\交大\助教工作\driver_on_hand\driver_on_hand\driver_on_hand.vcxproj”(rebuild 个目标)的操作。
+
+生成成功。
+
+已用时间 00:00:06.04
