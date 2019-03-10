@@ -4,10 +4,11 @@
 //        All rights reserved
 //
 //        filename :driver_cruise.cpp
-//		  version :1.0.4
-//        description :DEFINE an expectedSpeed function (refer to Chen YC) rather than a constant expectedSpeed = 80;
+//		  version :1.1.0
+//        description :IMPORVE an expectedSpeed function on my own rather than a constant expectedSpeed = 80;
+//						expectedSpeed = pow(10000 * min4(CircleFoot.r , CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);
 //
-//        modified by Henry Lu at  March/10/2019 12:02
+//        modified by Henry Lu at  March/10/2019 21:32
 //        https://github.com/henry87653/Engineering-Technological-Innovation-4D
 //
 //============================================================================================
@@ -160,12 +161,13 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		CircleFar = getR(_midline[70][0], _midline[70][1], _midline[90][0], _midline[90][1], _midline[110][0], _midline[110][1]);
 		CircleFoot = getR(_midline[1][0], _midline[1][1], _midline[2][0], _midline[2][1], _midline[3][0], _midline[3][1]);
 		
+		//Chen YC's Road Juding function
+		/*
 		float BendingFoot = (500 - CircleFoot.r) / 500;
 		float BendingNear = (500 - CircleNear.r) / 500;
 		float BendingMiddle = (500 - CircleMiddle.r) / 500;
 		float BendingFar = (500 - CircleFar.r) / 500;
 		float BendingSpeed = (500 - CircleSpeed.r) / 500;
-
 
 		//printf("speed %f BendingFoot %f Xerror %f  deviation[1] %f cmdSteer %f start time %d  start error %f\n",_speed,BendingFoot, _midline[0][0], deviation(1), *cmdSteer,Timer,StartErrorSum);
 		//printf("BendingFoot %f BendingNear %f BendingMiddle %f BendingFar %f BendingSpeed %f \n deviation(1) %f cmdSteer %f \n", BendingFoot, BendingNear,BendingMiddle,BendingFar,BendingSpeed,deviation(1), *cmdSteer);
@@ -188,12 +190,15 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		if (BendingFar > 0.5 && BendingMiddle == 0) {
 			expectedSpeed = 100;
 		}
+		*/
 
 		//CircleSpeed (startPoint+0, + delta, + 2 * delta);
 		//CircleNear (10,20,30)  CircleMiddle(10,30,50)  CircleFar(70,90,110)  CircleFoot(1,2,3)
 		printf("CircleSpeed:%4.1f \t CircleNear(10,20,30):%4.1f \t CircleMiddle(10,30,50):%4.1f \t  CircleFar(70,90,110):%4.1f \t  CircleFoot(1,2,3):%4.1f \t", CircleSpeed.r, CircleNear.r, CircleMiddle.r, CircleFar.r, CircleFoot.r);
 
 		//expectedSpeed need to be modified (using the ABOVE 5 circles)
+		
+		//Liu's Judging function? simplified edition
 		/*
 		if (CircleSpeed.r<=60)//road is very curved
 		{
@@ -213,9 +218,17 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			expectedSpeed = 200;
 		}
 		else
-			expectedSpeed = 80;//temporary
+			expectedSpeed = 60;//temporary
 		*/
-		
+
+		expectedSpeed = pow(10000 * min4(CircleFoot.r , CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);
+
+		/*
+		if (CircleSpeed.r <= 60)
+			expectedSpeed = constrain(45, 200, CircleSpeed.r*CircleSpeed.r*(-0.046) + CircleSpeed.r*5.3 - 59.66);
+		else
+			expectedSpeed = constrain(100, 200, CircleSpeed.r*1.4);
+		*/
 
 		printf("expectedSpeed:%3.1f\t", expectedSpeed);
 		printf("curSpeedErr:%3.1f\t", curSpeedErr);
