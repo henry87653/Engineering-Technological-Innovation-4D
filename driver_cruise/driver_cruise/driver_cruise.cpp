@@ -4,10 +4,16 @@
 //        All rights reserved
 //
 //        filename :driver_cruise.cpp
-//		  version :1.0.0
-//        description :				????
+//		  version :1.0.2
+//        description :DEFINE a better D_err (referred to Liu's D_err).
+//                     if (_speed < 20)//at the begining (initial)
+//                     		D_err = -atan2(_midline[5][0], _midline[5][1]);//original[5]
+//                     else
+//							D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));
+//                     MODIFY slightly printf functions to moniter the paramaters.expectedSpeed, curSpeedErr, speedErrSum, cmdSteer, cmdAcc, cmdBrake, cmdGear, D_errDiff, D_errSum, D_err
+//                     STILL SET a constant expectedSpeed = 80;
 //
-//        modified by Henry Lu at  March/9/2019 21:52
+//        modified by Henry Lu at  March/10/2019 11:32
 //        https://github.com/henry87653/Engineering-Technological-Innovation-4D
 //
 //============================================================================================
@@ -118,6 +124,11 @@ double constrain(double lowerBoundary, double upperBoundary,double input);		//
 //		Given three points ahead, outputs a struct circle.						//
 //		{radius:[1,500], sign{-1:left,1:right}									//
 circle getR(float x1, float y1, float x2, float y2, float x3, float y3);		//
+
+double min3(double a1, double a2, double a3) {return min(min(a1, a2), a3);}
+double min4(double a1, double a2, double a3, double a4) { return min(min3(a1, a2, a3), a4); }
+double min5(double a1, double a2, double a3, double a4, double a5) { return min(min4(a1, a2, a3, a4), a5); }
+
 //******************************************************************************//
 
 static void userDriverGetParam(float midline[200][2], float yaw, float yawrate, float speed, float acc, float width, int gearbox, float rpm){
@@ -157,7 +168,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		
 		//CircleSpeed (startPoint+0, + delta, + 2 * delta);
 		//CircleNear (10,20,30)  CircleMiddle(10,30,50)  CircleFar(70,90,110)  CircleFoot(1,2,3)
-		printf("CircleNear(10,20,30):%4.1f \t CircleMiddle(10,30,50):%4.1f \t  CircleFar(70,90,110):%4.1f \t  CircleFoot(1,2,3):%4.1f \t", CircleNear.r, CircleMiddle.r, CircleFar.r, CircleFoot.r);
+		printf("CircleSpeed:%4.1f \t CircleNear(10,20,30):%4.1f \t CircleMiddle(10,30,50):%4.1f \t  CircleFar(70,90,110):%4.1f \t  CircleFoot(1,2,3):%4.1f \t", CircleSpeed.r, CircleNear.r, CircleMiddle.r, CircleFar.r, CircleFoot.r);
 
 		//expectedSpeed need to be modified (using the ABOVE 5 circles)
 		/*
@@ -171,11 +182,22 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		}
 		*/
 
-		expectedSpeed = 80;//temporary
+		//very straight
+		
+		/*
+		if(min5(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleSpeed.r, CircleFar.r)>450)
+		{
+			expectedSpeed = 200;
+		}
+		else
+		*/
+			expectedSpeed = 80;//temporary
 
-		printf("expectedSpeed:%f\t", expectedSpeed);
-		printf("curSpeedErr:%f\t", curSpeedErr);
-		printf("speedErrSum:%f\t", speedErrSum);
+		
+
+		printf("expectedSpeed:%3.1f\t", expectedSpeed);
+		printf("curSpeedErr:%3.1f\t", curSpeedErr);
+		printf("speedErrSum:%3.1f\t", speedErrSum);
 		//printf(":%f\t", );
 		curSpeedErr = expectedSpeed - _speed;
 		speedErrSum = 0.1 * speedErrSum + curSpeedErr;
@@ -206,7 +228,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			*cmdBrake = constrain(0.0,0.8,-kp_s *curSpeedErr/5 - offset/3);
 			*cmdAcc = 0;
 		}
-		printf("*cmdSteer:%5.4f\t", *cmdSteer);
+		printf("*cmdSteer:%6.5f\t", *cmdSteer);
 		printf("*cmdAcc:%5.4f\t", *cmdAcc);
 		printf("*cmdBrake:%5.4f\t", *cmdBrake);
 		printf("cmdGear:%d\t", *cmdGear);//ldx:can be no asterisk(*)???
@@ -227,7 +249,10 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		kd_d = 0;
 
 		//get the error //ldx: modify this to get a better D_err function?
-		D_err = -atan2(_midline[5][0],_midline[5][1]);//only track the aiming point on the middle line
+		if(_speed < 20)//at the begining (initial)
+			D_err = -atan2(_midline[5][0], _midline[5][1]);//original[5]
+		else
+			D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));//only track the aiming point on the middle line
 		//ldx: modified ABOVE D_err
 
 		//the differential and integral operation 
@@ -236,14 +261,14 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		Tmp = D_err;
 
 		//print important param?   printf(":%f\t", );
-		printf("D_errDiff%5.2f\t", D_errDiff);
+		printf("D_errDiff:%5.2f\t", D_errDiff);
 		printf("D_errSum:%5.2f\t", D_errSum);
 
 		//set the error and get the cmdSteer // get the NEW cmdSteer?
 		*cmdSteer =constrain(-1.0,1.0,kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
 
 		//print some useful info on the terminal
-		printf("D_err : %5.2f \n", D_err);
+		printf("D_err : %5.2f \n\n", D_err);
 		//printf("cmdSteer : %f \n", *cmdSteer);	
 		/******************************************End by Yuan Wei********************************************/
 	}
