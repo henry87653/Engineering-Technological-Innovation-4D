@@ -87,7 +87,7 @@ int delta=20;												 //
 //***********************************************************//
 
 //*******************Other parameters*******************//
-const int topGear = 6;									//
+const int topGear = 2;									//
 double tmp;												//
 bool flag=true;											//
 double offset=0;										//
@@ -106,6 +106,8 @@ int RoadTypeFlag = 0;
 #define xerror _midline[0][0]
 int Timer = 0;
 float StartErrorSum = 0;
+float ExpectSpeed = 0;
+
 //******************************************************//
 
 //******************************Helping Functions*******************************//
@@ -151,20 +153,68 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	CircleFar = getR(_midline[70][0], _midline[70][1], _midline[90][0], _midline[90][1], _midline[110][0], _midline[110][1]);
 	CircleFoot = getR(_midline[1][0], _midline[1][1], _midline[2][0], _midline[2][1], _midline[3][0], _midline[3][1]);
 
-	printf("speed %f gearbox %d Xerror %f  deviation[1] %f  start time %d  start error %f\n", _speed, _gearbox, _midline[0][0], deviation(1),Timer,StartErrorSum);
+	float BendingFoot = (500 - CircleFoot.r) / 500;
+	float BendingNear = (500 - CircleNear.r) / 500;
+	float BendingMiddle = (500 - CircleMiddle.r) / 500;
+	float BendingFar = (500 - CircleFar.r) / 500;
+	float BendingSpeed = (500 - CircleSpeed.r) / 500;
+	
 
-	*cmdAcc = 0.5;
+	//printf("speed %f BendingFoot %f Xerror %f  deviation[1] %f cmdSteer %f start time %d  start error %f\n",_speed,BendingFoot, _midline[0][0], deviation(1), *cmdSteer,Timer,StartErrorSum);
+	//printf("BendingFoot %f BendingNear %f BendingMiddle %f BendingFar %f BendingSpeed %f \n deviation(1) %f cmdSteer %f \n", BendingFoot, BendingNear,BendingMiddle,BendingFar,BendingSpeed,deviation(1), *cmdSteer);
+	printf("Foot %f Near %f Middle %f Far %f Speed %f \n speed %f steer %f brake %f\n", BendingFoot, BendingNear, BendingMiddle, BendingFar, BendingSpeed,_speed,*cmdSteer,*cmdBrake);
+
+	*cmdAcc = 0.3;
 	*cmdBrake = 0;
 	*cmdGear = 1;
 	*cmdSteer = -deviation(1)+0.3*_yaw;
 
-	//start up
-	if (_speed < 20 ||abs(xerror) > 0.5) {
+
+
+	//start up(unfinished)
+	/*if (_speed < 20 ||abs(xerror) > 0.5) {
 		*cmdAcc = 0.5;
-		*cmdSteer = (-deviation(1) + 0.3*_yaw);
-		Timer++;
-		StartErrorSum += abs(xerror);
+		//*cmdSteer = (-1*deviation(1) + 0.3*_yaw);
+		*cmdSteer = -1 * deviation(1) +0.3*_yaw ;
+		//Timer++;
+		//StartErrorSum += abs(xerror);
+	}*/
+
+	//SpeedUp
+	if ((ExpectSpeed - _speed) > 10) {
+		updateGear(cmdGear);
 	}
+
+
+	//Judge bending
+	if (BendingFoot == BendingNear == BendingMiddle == BendingFar == 0) {
+		ExpectSpeed = 150;
+	}
+	else {
+		ExpectSpeed = 80;
+	}
+
+	if (BendingNear > 0.8 && BendingMiddle > 0.8) {
+		ExpectSpeed = 60;
+	}
+	if (BendingFoot > 0.8 && BendingNear > 0.8&& BendingMiddle > 0.8) {
+		ExpectSpeed = 40;
+	}
+	if (BendingFar > 0.5 && BendingMiddle == 0) {
+		ExpectSpeed = 100;
+	}
+	
+
+	//Brake
+	if (_speed > ExpectSpeed) {
+		*cmdBrake = (_speed - ExpectSpeed) / 5;
+	}
+	if (*cmdSteer > 1) {
+		ExpectSpeed = 40;
+	}
+
+
+
 
 
 
