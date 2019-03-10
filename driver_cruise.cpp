@@ -1,3 +1,5 @@
+//only for test
+
 /*      
      WARNING !
      
@@ -85,7 +87,7 @@ int delta=20;												 //
 //***********************************************************//
 
 //*******************Other parameters*******************//
-const int topGear = 6;									//
+const int topGear = 2;									//
 double tmp;												//
 bool flag=true;											//
 double offset=0;										//
@@ -101,9 +103,17 @@ float expectspeed = 0;
 int accuc = 0;
 int roadTypeJudge = 0;
 int RoadTypeFlag = 0;
+#define xerror _midline[0][0]
+int Timer = 0;
+float StartErrorSum = 0;
+float ExpectSpeed = 0;
+
 //******************************************************//
 
 //******************************Helping Functions*******************************//
+//Function deviation:
+//		Calculate the arctan of the degree between y axis and segment of midline[k][0] and midline[k][1]
+float deviation(int k);
 // Function updateGear:															//
 //		Update Gear automatically according to the current speed.				//
 //		Implemented as Schmitt trigger.											//
@@ -143,13 +153,84 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	CircleFar = getR(_midline[70][0], _midline[70][1], _midline[90][0], _midline[90][1], _midline[110][0], _midline[110][1]);
 	CircleFoot = getR(_midline[1][0], _midline[1][1], _midline[2][0], _midline[2][1], _midline[3][0], _midline[3][1]);
 
+	float BendingFoot = (500 - CircleFoot.r) / 500;
+	float BendingNear = (500 - CircleNear.r) / 500;
+	float BendingMiddle = (500 - CircleMiddle.r) / 500;
+	float BendingFar = (500 - CircleFar.r) / 500;
+	float BendingSpeed = (500 - CircleSpeed.r) / 500;
+	
+
+	//printf("speed %f BendingFoot %f Xerror %f  deviation[1] %f cmdSteer %f start time %d  start error %f\n",_speed,BendingFoot, _midline[0][0], deviation(1), *cmdSteer,Timer,StartErrorSum);
+	//printf("BendingFoot %f BendingNear %f BendingMiddle %f BendingFar %f BendingSpeed %f \n deviation(1) %f cmdSteer %f \n", BendingFoot, BendingNear,BendingMiddle,BendingFar,BendingSpeed,deviation(1), *cmdSteer);
+	printf("Foot %f Near %f Middle %f Far %f Speed %f \n speed %f steer %f brake %f\n", BendingFoot, BendingNear, BendingMiddle, BendingFar, BendingSpeed,_speed,*cmdSteer,*cmdBrake);
+
+	*cmdAcc = 0.3;
+	*cmdBrake = 0;
+	*cmdGear = 1;
+	*cmdSteer = -deviation(1)+0.3*_yaw;
+
+
+
+	//start up(unfinished)
+	/*if (_speed < 20 ||abs(xerror) > 0.5) {
+		*cmdAcc = 0.5;
+		//*cmdSteer = (-1*deviation(1) + 0.3*_yaw);
+		*cmdSteer = -1 * deviation(1) +0.3*_yaw ;
+		//Timer++;
+		//StartErrorSum += abs(xerror);
+	}*/
+
+	//SpeedUp
+	if ((ExpectSpeed - _speed) > 10) {
+		updateGear(cmdGear);
+	}
+
+
+	//Judge bending
+	if (BendingFoot == BendingNear == BendingMiddle == BendingFar == 0) {
+		ExpectSpeed = 150;
+	}
+	else {
+		ExpectSpeed = 80;
+	}
+
+	if (BendingNear > 0.8 && BendingMiddle > 0.8) {
+		ExpectSpeed = 60;
+	}
+	if (BendingFoot > 0.8 && BendingNear > 0.8&& BendingMiddle > 0.8) {
+		ExpectSpeed = 40;
+	}
+	if (BendingFar > 0.5 && BendingMiddle == 0) {
+		ExpectSpeed = 100;
+	}
+	
+
+	//Brake
+	if (_speed > ExpectSpeed) {
+		*cmdBrake = (_speed - ExpectSpeed) / 5;
+	}
+	if (*cmdSteer > 1) {
+		ExpectSpeed = 40;
+	}
+
+
+
+
+
+
+}
+
+
+
+//Someone's code is below
+/*
 	minc = min(min(CircleSpeed.r, CircleMiddle.r), CircleFar.r);
 	//printf("%d \n", roadTypeJudge);
 	if (_speed < 20) { *cmdGear = 1; *cmdAcc = 1; *cmdBrake = 0; *cmdSteer =0.3*(_yaw - 3.5 * atan2(_midline[1][0],_midline[1][1])); ++roadTypeJudge; }		//起步阶段，what is roadtypejudge?
 	else {
 		if (roadTypeJudge < 95 || (CircleFoot.r<100 && RoadTypeFlag == 0))						//???????
 		{
-			//***************************************//
+			//***************************************
 			//速度控制模块//
 			if (accuc == 0)														
 			{
@@ -186,10 +267,10 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			}
 			}
 			printf("%f \n", _midline[0][0]);
-			//***************************************//
+			//***************************************
 			//油门控制模块//
 			*cmdAcc = 0.2;
-			//************************************//
+			//************************************
 			//刹车控制模块//														//每隔一帧踩一次刹车
 			if (_speed > expectspeed  && BreakFlag == 0)
 			{
@@ -202,14 +283,14 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 				BreakFlag = 0;
 			}
 			if (abs(*cmdSteer) > 0.2)	*cmdBrake = 2* (*cmdBrake) / 3;				//转向很大，刹车减小
-			//***************************************//
+			//***************************************
 			updateGear(cmdGear);
 			roadTypeJudge = 94;
 		}
 		else
 		{
 			RoadTypeFlag = 1;
-			//***************************************//
+			//***************************************
 			//速度控制模块//
 
 			if (accuc == 0)
@@ -247,10 +328,10 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			}
 			}
 			//printf("%d \n", speedmode);
-			//***************************************//
+			//***************************************
 			//油门控制模块//
 			*cmdAcc = 0.17;
-			//***************************************//
+			//***************************************
 			//刹车控制模块//
 			if (_speed > expectspeed  && BreakFlag == 0)
 			{
@@ -263,14 +344,14 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 				BreakFlag = 0;
 			}
 			if (abs(*cmdSteer) > 0.2)*cmdBrake = 2 * *cmdBrake / 3;
-			//***************************************//
+			//***************************************
 			updateGear(cmdGear);
 		}
 	}
 	//printf("speedmode %f c1.r %f \n", c.r, c1.r);
 	
+	*/
 
-}
 
 //static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, int* cmdGear) {
 //	if (parameterSet == false)		// Initialization Part
@@ -354,6 +435,10 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 //	}
 //}
 
+
+float deviation(int k) {
+	return atan2(_midline[k][0], _midline[k][1]);
+}
 
 void PIDParamSetter()
 {
