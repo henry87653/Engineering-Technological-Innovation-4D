@@ -4,15 +4,16 @@
 //        All rights reserved
 //
 //        filename :driver_cruise.cpp
-//		  version :1.1.1
+//		  version :1.1.2
 //        description :
 /*
-		change the expectedSpeed function//expectedSpeed = pow(10000 * min4(CircleFoot.r , CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);
+		change the expectedSpeed function to 
+		expectedSpeed = 20 * pow(min4(CircleFoot.r , CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333); //21.5
 		NEED to improve: ADD a constrain to expectedSpeed? ADD a time delay ?? Integration? A grater BRAKE ?
 		*/
 //						
 //
-//        modified by Henry Lu at  March/10/2019 23:22
+//        modified by Henry Lu at  March/10/2019 23:53
 //        https://github.com/henry87653/Engineering-Technological-Innovation-4D
 //
 //============================================================================================
@@ -225,7 +226,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			expectedSpeed = 60;//temporary
 		*/
 
-		expectedSpeed = 16 * pow(min4(CircleFoot.r , CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);//21.5
+		expectedSpeed = 20 * pow(min4(CircleFoot.r , CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);//21.5
 
 		/*
 		if (CircleSpeed.r <= 60)
