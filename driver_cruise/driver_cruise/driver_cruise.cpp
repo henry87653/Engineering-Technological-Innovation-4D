@@ -4,19 +4,20 @@
 //        All rights reserved
 //
 //        filename :driver_cruise.cpp
-//		  version :1.1.4
+//		  version :1.1.7
 //        description :
 /*
-		kp_d = 1;//ldx: modified
-        ki_d = 0;//ldx: modified
-		kd_d = 0.2
-		expectedSpeed = 20 * pow(min4(CircleFoot.r , CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);//21.5
 
-		NEED to improve: ADD a constrain to expectedSpeed? ADD a time delay ?? Integration? A grater BRAKE ?
+		kd_d = 0.5; to reduce oscillation;
+		DECREASE expectedSpeed = 20 * pow(min4(CircleFoot.r , CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);//21.5
+
+		NEED to improve:IMPROVE the Steering function (D_err) to avoid oscillation
+		Prevent the worst case: modify the cmdacc = 0.05 when  steer > 0.7
+		A grater BRAKE ?
 		*/
 //						
 //
-//        modified by Henry Lu at  March/10/2019 23:53
+//        modified by Henry Lu at  March/11/2019 00:57
 //        https://github.com/henry87653/Engineering-Technological-Innovation-4D
 //
 //============================================================================================
@@ -289,7 +290,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		//set the param of PID controller  //ldx: reset all 3 param below
         kp_d = 1;//ldx: modified
         ki_d = 0;//ldx: modified
-		kd_d = 0.2;
+		kd_d = 0.5;
 
 		//get the error //ldx: modify this to get a better D_err function?
 		if(_speed < 20)//at the begining (initial)

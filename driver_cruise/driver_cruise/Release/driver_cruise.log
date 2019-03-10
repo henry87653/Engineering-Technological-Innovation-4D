@@ -1,10 +1,10 @@
 ﻿D:\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(377,5): warning MSB8004: Output 目录未以斜杠结尾。  此生成实例将添加斜杠，因为必须有这个斜杠才能正确计算 Output 目录。
   driver_cruise.cpp
-d:\github\engineering-technological-innovation-4d\driver_cruise\driver_cruise\driver_cruise.cpp(176): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
-d:\github\engineering-technological-innovation-4d\driver_cruise\driver_cruise\driver_cruise.cpp(263): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-d:\github\engineering-technological-innovation-4d\driver_cruise\driver_cruise\driver_cruise.cpp(269): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-d:\github\engineering-technological-innovation-4d\driver_cruise\driver_cruise\driver_cruise.cpp(275): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-d:\github\engineering-technological-innovation-4d\driver_cruise\driver_cruise\driver_cruise.cpp(282): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-d:\github\engineering-technological-innovation-4d\driver_cruise\driver_cruise\driver_cruise.cpp(322): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+d:\github\engineering-technological-innovation-4d\driver_cruise\driver_cruise\driver_cruise.cpp(166): warning C4244: “=”: 从“double”转换到“int”，可能丢失数据
+d:\github\engineering-technological-innovation-4d\driver_cruise\driver_cruise\driver_cruise.cpp(253): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+d:\github\engineering-technological-innovation-4d\driver_cruise\driver_cruise\driver_cruise.cpp(259): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+d:\github\engineering-technological-innovation-4d\driver_cruise\driver_cruise\driver_cruise.cpp(265): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+d:\github\engineering-technological-innovation-4d\driver_cruise\driver_cruise\driver_cruise.cpp(272): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
+d:\github\engineering-technological-innovation-4d\driver_cruise\driver_cruise\driver_cruise.cpp(312): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
     正在创建库 D:\CyberTORCS_2019Spring_Student\cybercruise\driver_cruise.lib 和对象 D:\CyberTORCS_2019Spring_Student\cybercruise\driver_cruise.exp
   driver_cruise.vcxproj -> D:\CyberTORCS_2019Spring_Student\cybercruise\driver_cruise.dll
