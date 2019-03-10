@@ -4,11 +4,14 @@
 //        All rights reserved
 //
 //        filename :driver_cruise.cpp
-//		  version :1.1.2
+//		  version :1.1.4
 //        description :
 /*
-		change the expectedSpeed function to 
-		expectedSpeed = 20 * pow(min4(CircleFoot.r , CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333); //21.5
+		kp_d = 1;//ldx: modified
+        ki_d = 0;//ldx: modified
+		kd_d = 0.2
+		expectedSpeed = 20 * pow(min4(CircleFoot.r , CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);//21.5
+
 		NEED to improve: ADD a constrain to expectedSpeed? ADD a time delay ?? Integration? A grater BRAKE ?
 		*/
 //						
@@ -285,8 +288,8 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		// Direction Control		
 		//set the param of PID controller  //ldx: reset all 3 param below
         kp_d = 1;//ldx: modified
-        ki_d = 0;
-		kd_d = 0;
+        ki_d = 0;//ldx: modified
+		kd_d = 0.2;
 
 		//get the error //ldx: modify this to get a better D_err function?
 		if(_speed < 20)//at the begining (initial)
@@ -297,7 +300,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 		//the differential and integral operation 
 		D_errDiff = D_err - Tmp;
-		D_errSum = D_errSum + D_err;
+		D_errSum = 0.2 * D_errSum + D_err;//ldx: modified
 		Tmp = D_err;
 
 		//print important param?   printf(":%f\t", );
