@@ -161,8 +161,8 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	
 
 	//printf("speed %f BendingFoot %f Xerror %f  deviation[1] %f cmdSteer %f start time %d  start error %f\n",_speed,BendingFoot, _midline[0][0], deviation(1), *cmdSteer,Timer,StartErrorSum);
-	//printf("BendingFoot %f BendingNear %f BendingMiddle %f BendingFar %f BendingSpeed %f \n deviation(1) %f cmdSteer %f \n", BendingFoot, BendingNear,BendingMiddle,BendingFar,BendingSpeed,deviation(1), *cmdSteer);
-	printf("Foot %f Near %f Middle %f Far %f Speed %f \n speed %f steer %f brake %f\n", BendingFoot, BendingNear, BendingMiddle, BendingFar, BendingSpeed,_speed,*cmdSteer,*cmdBrake);
+	printf("BendingFoot %f BendingNear %f BendingMiddle %f BendingFar %f BendingSpeed %f \n yaw %f deviation(1) %f cmdSteer %f \n", BendingFoot, BendingNear,BendingMiddle,BendingFar,BendingSpeed,_yaw,deviation(1), *cmdSteer);
+	//printf("Foot %f Near %f Middle %f Far %f Speed %f \n speed %f steer %f brake %f\n", BendingFoot, BendingNear, BendingMiddle, BendingFar, BendingSpeed,_speed,*cmdSteer,*cmdBrake);
 
 	*cmdAcc = 0.3;
 	*cmdBrake = 0;
