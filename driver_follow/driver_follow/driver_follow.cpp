@@ -79,13 +79,13 @@ static void userDriverGetParam(float LeaderXY[2], float midline[200][2], float y
 static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, int* cmdGear){
 	/* write your own code here */
 
-	if (_Leader_X*_Leader_X + _Leader_Y*_Leader_Y < 2000) {
+	if (_Leader_X*_Leader_X + _Leader_Y*_Leader_Y < 2000) {//¼±É²³µ  emergency BRAKE
 		*cmdAcc = 0;
 		*cmdBrake = 1;
 		//*cmdSteer = _yaw * 1.5;
 		*cmdSteer = (_yaw -8*atan2( _midline[30][0],_midline[30][1]))/3.14 ;
 		*cmdGear = 1;
-	} else {
+	} else {//speed up to follow
 		*cmdAcc = 0.6;
 		*cmdBrake = 0;
 		*cmdSteer = (_yaw -8*atan2( _midline[30][0],_midline[30][1]))/3.14 ;
