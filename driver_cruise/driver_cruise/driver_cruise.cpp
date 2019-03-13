@@ -4,12 +4,11 @@
 //        All rights reserved
 //
 //        filename :driver_cruise.cpp
-//		  version :1.1.7
+//		  version :1.2.0
 //        description :
 /*
 
-		kd_d = 0.5; to reduce oscillation;
-		DECREASE expectedSpeed = 20 * pow(min4(CircleFoot.r , CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);//21.5
+		DEFINE an error function (according to TA's API file)error = L - Car_w;
 
 		NEED to improve:IMPROVE the Steering function (D_err) to avoid oscillation
 		Prevent the worst case: modify the cmdacc = 0.05 when  steer > 0.7
@@ -314,6 +313,28 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		//print some useful info on the terminal
 		printf("D_err : %5.2f \n\n", D_err);
 		//printf("cmdSteer : %f \n", *cmdSteer);	
+		/******************************************End by Yuan Wei********************************************/
+
+		/****************************************** ERROR function ********************************************/
+		//DEFINE an error function (according to TA's API file)error = L - Car_w;
+		//use _midline[0][0],_midline[0][1]; _yaw
+
+		const double Car_L = 4.90, Car_W = 1.92;
+		const double factAx = 0.5 * Car_W, factBx = -0.5 * Car_W, factCx = -0.5 * Car_W, factDx = 0.5 * Car_W;
+		const double factAy = 0.5 * Car_L, factBy = 0.5 * Car_L, factCy = -0.5 * Car_L, factDy = -0.5 * Car_L;
+		double mx = _midline[0][0], my = _midline[0][1];
+		double processAx = factAx - mx, processBx = factBx - mx, processCx = factCx - mx, processDx = factDx - mx;
+		double processAy = factAy - my, processBy = factBy - my, processCy = factCy - my, processDy = factDy - my;
+		//double expectAx, expectBx, expectCx, expectDx;
+		//double expectAy, expectBy, expectCy, expectDy;
+		double cosine = cos(_yaw), sine = sin(_yaw);
+		double expectAx = processAx * cosine - processAy * sine;// double expectAy = processAx * cosine + processAx * sine;
+		double expectBx = processBx * cosine - processBy * sine;// double expectBy = processBx * cosine + processBx * sine;
+		double expectCx = processCx * cosine - processCy * sine;// double expectCy = processCx * cosine + processCx * sine;
+		double expectDx = processDx * cosine - processDy * sine;// double expectDy = processDx * cosine + processDx * sine;
+		double curError = max(max(abs(expectAx), abs(expectBx)), max(abs(expectCx), abs(expectDx))) - 0.5 * Car_W;
+
+		printf("curError:%f\n", curError);
 		/******************************************End by Yuan Wei********************************************/
 	}
 }
