@@ -4,11 +4,12 @@
 //        All rights reserved
 //
 //        filename :driver_cruise.cpp
-//		  version :1.2.0
+//		  version :1.2.1
 //        description :
 /*
 
-		DEFINE an error function (according to TA's API file)error = L - Car_w;
+		TEST the error function (according to TA's API file)error = L - Car_w;
+		COMPARE totalError & error (see cruise_grade.xlsx);
 
 		NEED to improve:IMPROVE the Steering function (D_err) to avoid oscillation
 		Prevent the worst case: modify the cmdacc = 0.05 when  steer > 0.7
@@ -113,6 +114,7 @@ double tmp;												//
 bool flag=true;											//
 double offset=0;										//
 double Tmp = 0;
+double totalError = 0;
 //******************************************************//
 
 //******************************Helping Functions*******************************//
@@ -311,7 +313,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		*cmdSteer =constrain(-1.0,1.0,kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
 
 		//print some useful info on the terminal
-		printf("D_err : %5.2f \n\n", D_err);
+		printf("D_err : %5.2f \t", D_err);
 		//printf("cmdSteer : %f \n", *cmdSteer);	
 		/******************************************End by Yuan Wei********************************************/
 
@@ -333,8 +335,10 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		double expectCx = processCx * cosine - processCy * sine;// double expectCy = processCx * cosine + processCx * sine;
 		double expectDx = processDx * cosine - processDy * sine;// double expectDy = processDx * cosine + processDx * sine;
 		double curError = max(max(abs(expectAx), abs(expectBx)), max(abs(expectCx), abs(expectDx))) - 0.5 * Car_W;
+		totalError += curError;
 
-		printf("curError:%f\n", curError);
+		printf("totalError:%f\t", totalError);
+		printf("curError:%f\n\n", curError);
 		/******************************************End by Yuan Wei********************************************/
 	}
 }
