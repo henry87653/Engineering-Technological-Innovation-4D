@@ -7,7 +7,6 @@
 //		  version :1.1.7
 //        description :
 /*
-/*
 
 		kd_d = 0.5; to reduce oscillation;
 		DECREASE expectedSpeed = 20 * pow(min4(CircleFoot.r , CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);//21.5
