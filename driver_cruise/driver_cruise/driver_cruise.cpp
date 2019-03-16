@@ -4,12 +4,10 @@
 //        All rights reserved
 //
 //        filename :driver_cruise.cpp
-//		  version :1.2.3
+//		  version :1.2.4
 //        description :
 /*
-		AMEND the ERROR function * 1.06638779900189;
-		ADD & AMEND a TIME function;total_T;
-		total_T += 0.0208625612715938;//0.02
+		REDUCE print functions. Put them TOGRTHER.
 
 		NEED to improve:IMPROVE the Steering function (D_err) to avoid oscillation
 		Prevent the worst case: modify the cmdacc = 0.05 when  steer > 0.7
@@ -205,8 +203,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 		//CircleSpeed (startPoint+0, + delta, + 2 * delta);
 		//CircleNear (10,20,30)  CircleMiddle(10,30,50)  CircleFar(70,90,110)  CircleFoot(1,2,3)
-		printf("CircleSpeed:%4.1f \t CircleNear(10,20,30):%4.1f \t CircleMiddle(10,30,50):%4.1f \t  CircleFar(70,90,110):%4.1f \t  CircleFoot(1,2,3):%4.1f \t", CircleSpeed.r, CircleNear.r, CircleMiddle.r, CircleFar.r, CircleFoot.r);
-
+		
 		//expectedSpeed need to be modified (using the ABOVE 5 circles)
 		
 		//Liu's Judging function? simplified edition
@@ -241,29 +238,26 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			expectedSpeed = constrain(100, 200, CircleSpeed.r*1.4);
 		*/
 
-		printf("expectedSpeed:%3.1f\t", expectedSpeed);
-		printf("curSpeedErr:%3.1f\t", curSpeedErr);
-		printf("speedErrSum:%3.1f\t", speedErrSum);
-		//printf(":%f\t", );
+		
 		curSpeedErr = expectedSpeed - _speed;
 		speedErrSum = 0.1 * speedErrSum + curSpeedErr;
 		if (curSpeedErr > 0)			//lackspeed
 		{
 			if (abs(*cmdSteer)<0.6)//-1.0 <= *cmdSteer <=  1.0; when *cmdSteer is small
 			{
-				printf("*cmdSteer small\t");
+				//printf("*cmdSteer small\t");
 				*cmdAcc = constrain(0.0,1.0,kp_s * curSpeedErr + ki_s * speedErrSum + offset);
 				*cmdBrake = 0;
 			}
 			else if (abs(*cmdSteer)>0.70)//when *cmdSteer is large
 			{
-				printf("*cmdSteer large\t");
+				//printf("*cmdSteer large\t");
 				*cmdAcc = 0.005 + offset;
 				*cmdBrake = 0;
 			}
 			else//when *cmdSteer is in the middle ( 0.6 to 0.7 )
 			{
-				printf("*cmdSteer middle\t");
+				//printf("*cmdSteer middle\t");
 				*cmdAcc = 0.11 + offset;
 				*cmdBrake = 0;
 			}
@@ -274,11 +268,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			*cmdBrake = constrain(0.0,0.8,-kp_s *curSpeedErr/5 - offset/3);
 			*cmdAcc = 0;
 		}
-		printf("*cmdSteer:%6.5f\t", *cmdSteer);
-		printf("*cmdAcc:%5.4f\t", *cmdAcc);
-		printf("*cmdBrake:%5.4f\t", *cmdBrake);
-		printf("cmdGear:%d\t", *cmdGear);//ldx:can be no asterisk(*)???
-
+		
 		updateGear(cmdGear);//ldx:huan dang
 		
 		//ldx:important algorithm below: error model
@@ -306,16 +296,12 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		D_errSum = 0.2 * D_errSum + D_err;//ldx: modified
 		Tmp = D_err;
 
-		//print important param?   printf(":%f\t", );
-		printf("D_errDiff:%5.2f\t", D_errDiff);
-		printf("D_errSum:%5.2f\t", D_errSum);
-
 		//set the error and get the cmdSteer // get the NEW cmdSteer?
 		*cmdSteer =constrain(-1.0,1.0,kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
 
-		//print some useful info on the terminal
-		printf("D_err : %5.2f \t", D_err);
-		//printf("cmdSteer : %f \n", *cmdSteer);	
+		
+		
+	
 		/******************************************End by Yuan Wei********************************************/
 
 		/****************************************** ERROR function ********************************************/
@@ -339,9 +325,27 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		totalError += 1.06638779900189 * curError;
 		total_T += 0.0208625612715938;
 
-		printf("totalError:%f\t", totalError);
-		printf("total_T:%f\t", total_T);
-		printf("curError:%f\n\n", curError);
+		//print some useful info on the terminal
+
+		printf("total_T:%f\n    ", total_T);
+		printf("CircleSpeed:%4.1f \t CircleNear(10,20,30):%4.1f \t CircleMiddle(10,30,50):%4.1f \t  CircleFar(70,90,110):%4.1f \t  CircleFoot(1,2,3):%4.1f \n    ", CircleSpeed.r, CircleNear.r, CircleMiddle.r, CircleFar.r, CircleFoot.r);
+
+		printf("expectedSpeed:%3.1f\t", expectedSpeed);
+		printf("curSpeedErr:%3.1f\t", curSpeedErr);
+		printf("speedErrSum:%3.1f\n    ", speedErrSum);
+
+		printf("*cmdSteer:%6.5f\t", *cmdSteer);
+		printf("*cmdAcc:%5.4f\t", *cmdAcc);
+		printf("*cmdBrake:%5.4f\t", *cmdBrake);
+		printf("cmdGear:%d\n    ", *cmdGear);//ldx:can be no asterisk(*)???
+
+		printf("D_err : %5.2f \t", D_err);
+		printf("D_errDiff:%5.2f\t", D_errDiff);
+		printf("D_errSum:%5.2f\n    ", D_errSum);
+
+		printf("curError:%f\t", curError);
+		printf("totalError:%f\n\n", totalError);
+		
 		/******************************************End by Yuan Wei********************************************/
 	}
 }
