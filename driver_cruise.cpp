@@ -11,17 +11,13 @@
 
 //        filename :driver_cruise.cpp
 
-//		  version :1.1.7
+//		  version :1.2.5
 
 //        description :
 
 /*
 
-
-
-		kd_d = 0.5; to reduce oscillation;
-
-		DECREASE expectedSpeed = 20 * pow(min4(CircleFoot.r , CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);//21.5
+		Increase a flag IsDirt to judge the type of road.
 
 
 
@@ -37,7 +33,7 @@
 
 		//
 
-		//        modified by Henry Lu at  March/11/2019 00:57
+		//        modified by Yc at  March/16/2019 11:05
 
 		//        https://github.com/henry87653/Engineering-Technological-Innovation-4D
 
@@ -77,7 +73,7 @@
 
 
 
-	static void userDriverGetParam(float midline[200][2], float yaw, float yawrate, float speed, float acc, float width, int gearbox, float rpm);
+static void userDriverGetParam(float midline[200][2], float yaw, float yawrate, float speed, float acc, float width, int gearbox, float rpm);
 
 static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, int* cmdGear);
 
@@ -230,6 +226,10 @@ bool flag = true;											//
 double offset = 0;										//
 
 double Tmp = 0;
+
+double totalError = 0;
+
+double total_T = 0;
 
 int TypeJudgeCounter1 = 0;
 
@@ -421,11 +421,10 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			}
 		}
 
+
 		//CircleSpeed (startPoint+0, + delta, + 2 * delta);
 
 		//CircleNear (10,20,30)  CircleMiddle(10,30,50)  CircleFar(70,90,110)  CircleFoot(1,2,3)
-
-
 
 
 
@@ -497,6 +496,8 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 
 
+
+
 		curSpeedErr = expectedSpeed - _speed;
 
 		speedErrSum = 0.1 * speedErrSum + curSpeedErr;
@@ -509,7 +510,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 			{
 
-				printf("*cmdSteer small\t");
+				//printf("*cmdSteer small\t");
 
 				*cmdAcc = constrain(0.0, 1.0, kp_s * curSpeedErr + ki_s * speedErrSum + offset);
 
@@ -521,7 +522,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 			{
 
-				printf("*cmdSteer large\t");
+				//printf("*cmdSteer large\t");
 
 				*cmdAcc = 0.005 + offset;
 
@@ -533,7 +534,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 			{
 
-				printf("*cmdSteer middle\t");
+				//printf("*cmdSteer middle\t");
 
 				*cmdAcc = 0.11 + offset;
 
@@ -550,44 +551,10 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		{
 
 			*cmdBrake = constrain(0.0, 0.8, -kp_s * curSpeedErr / 5 - offset / 3);
-			//*cmdBrake = constrain(0.0, 0.8, 1*(-kp_s * curSpeedErr /5  - offset / 3));	//changed at 19:31
 
 			*cmdAcc = 0;
 
 		}
-
-		printf("Counter1: %d Counter2:%d speed: %f IsDirt:%d\n", TypeJudgeCounter1,TypeJudgeCounter2, _speed,IsDirt);
-
-		//printf("*cmdSteer:%6.5f\t", *cmdSteer);
-
-		//printf("*cmdAcc:%5.4f\t", *cmdAcc);
-
-		//printf("*cmdBrake:%5.4f\t", *cmdBrake);
-
-		//printf("cmdGear:%d\t", *cmdGear);//ldx:can be no asterisk(*)???
-
-		//printf("CircleSpeed:%4.1f \t CircleNear(10,20,30):%4.1f \t CircleMiddle(10,30,50):%4.1f \t  CircleFar(70,90,110):%4.1f \t  CircleFoot(1,2,3):%4.1f \t", CircleSpeed.r, CircleNear.r, CircleMiddle.r, CircleFar.r, CircleFoot.r);
-
-		//printf("expectedSpeed:%3.1f\t", expectedSpeed);
-
-		//printf("curSpeedErr:%3.1f\t", curSpeedErr);
-
-		//printf("speedErrSum:%3.1f\t", speedErrSum);
-
-		//printf(":%f\t", );
-
-		//print important param?   printf(":%f\t", );
-
-		//printf("D_errDiff:%5.2f\t", D_errDiff);
-
-		//printf("D_errSum:%5.2f\t", D_errSum);
-
-		//print some useful info on the terminal
-
-		//printf("D_err : %5.2f \n\n", D_err);
-
-		//printf("cmdSteer : %f \n", *cmdSteer);	
-
 
 
 
@@ -613,14 +580,11 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 		//set the param of PID controller  //ldx: reset all 3 param below
 
-		//kp_d = 1;//ldx: modified
-		kp_d = 1;//yc modified
+		kp_d = 1;//ldx: modified
 
-		//ki_d = 0;//ldx: modified
-		ki_d = 0.001;//yc modified
+		ki_d = 0;//ldx: modified
 
-		//kd_d = 0.5;
-		kd_d = 0.65;//yc modified
+		kd_d = 0.5;
 
 
 
@@ -648,13 +612,103 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 
 
-
-
-
 		//set the error and get the cmdSteer // get the NEW cmdSteer?
 
 		*cmdSteer = constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
 
+
+
+
+
+
+
+
+
+		/******************************************End by Yuan Wei********************************************/
+
+
+
+		/****************************************** ERROR function ********************************************/
+
+		//DEFINE an error function (according to TA's API file)error = L - Car_w;
+
+		//use _midline[0][0],_midline[0][1]; _yaw
+
+
+
+		const double Car_L = 4.90, Car_W = 1.92;
+
+		const double factAx = 0.5 * Car_W, factBx = -0.5 * Car_W, factCx = -0.5 * Car_W, factDx = 0.5 * Car_W;
+
+		const double factAy = 0.5 * Car_L, factBy = 0.5 * Car_L, factCy = -0.5 * Car_L, factDy = -0.5 * Car_L;
+
+		double mx = _midline[0][0], my = _midline[0][1];
+
+		double processAx = factAx - mx, processBx = factBx - mx, processCx = factCx - mx, processDx = factDx - mx;
+
+		double processAy = factAy - my, processBy = factBy - my, processCy = factCy - my, processDy = factDy - my;
+
+		//double expectAx, expectBx, expectCx, expectDx;
+
+		//double expectAy, expectBy, expectCy, expectDy;
+
+		double cosine = cos(_yaw), sine = sin(_yaw);
+
+		double expectAx = processAx * cosine - processAy * sine;// double expectAy = processAx * cosine + processAx * sine;
+
+		double expectBx = processBx * cosine - processBy * sine;// double expectBy = processBx * cosine + processBx * sine;
+
+		double expectCx = processCx * cosine - processCy * sine;// double expectCy = processCx * cosine + processCx * sine;
+
+		double expectDx = processDx * cosine - processDy * sine;// double expectDy = processDx * cosine + processDx * sine;
+
+		double curError = max(max(abs(expectAx), abs(expectBx)), max(abs(expectCx), abs(expectDx))) - 0.5 * Car_W;
+
+		totalError += 1.06638779900189 * curError;
+
+		total_T += 0.0208625612715938;
+
+
+
+		//print some useful info on the terminal
+
+		printf("IsDirt:%d\t", IsDirt);
+
+		printf("total_T:%f\t", total_T);
+
+		//printf("CircleSpeed:%4.1f \t CircleNear(10,20,30):%4.1f \t CircleMiddle(10,30,50):%4.1f \t  CircleFar(70,90,110):%4.1f \t  CircleFoot(1,2,3):%4.1f \n    ", CircleSpeed.r, CircleNear.r, CircleMiddle.r, CircleFar.r, CircleFoot.r);
+
+
+
+		//printf("expectedSpeed:%3.1f\t", expectedSpeed);
+
+		//printf("curSpeedErr:%3.1f\t", curSpeedErr);
+
+		//printf("speedErrSum:%3.1f\n    ", speedErrSum);
+
+
+
+		//printf("*cmdSteer:%6.5f\t", *cmdSteer);
+
+		//printf("*cmdAcc:%5.4f\t", *cmdAcc);
+
+		//printf("*cmdBrake:%5.4f\t", *cmdBrake);
+
+		//printf("cmdGear:%d\n    ", *cmdGear);//ldx:can be no asterisk(*)???
+
+
+
+		//printf("D_err : %5.2f \t", D_err);
+
+		//printf("D_errDiff:%5.2f\t", D_errDiff);
+
+		//printf("D_errSum:%5.2f\n    ", D_errSum);
+
+
+
+		//printf("curError:%f\t", curError);
+
+		printf("totalError:%f\n", totalError);
 
 
 
@@ -937,3 +991,4 @@ circle getR(float x1, float y1, float x2, float y2, float x3, float y3)
 }
 
 /**********************************ldx: NO NEED TO MODIFY THE Helping Functions ABOVE**********************************/
+
