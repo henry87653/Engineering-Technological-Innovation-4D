@@ -4,12 +4,12 @@
 //        All rights reserved
 //
 //        filename :driver_cruise.cpp
-//		  version :1.2.1
+//		  version :1.2.3
 //        description :
 /*
-
-		TEST the error function (according to TA's API file)error = L - Car_w;
-		COMPARE totalError & error (see cruise_grade.xlsx);
+		AMEND the ERROR function * 1.06638779900189;
+		ADD & AMEND a TIME function;total_T;
+		total_T += 0.0208625612715938;//0.02
 
 		NEED to improve:IMPROVE the Steering function (D_err) to avoid oscillation
 		Prevent the worst case: modify the cmdacc = 0.05 when  steer > 0.7
@@ -115,6 +115,7 @@ bool flag=true;											//
 double offset=0;										//
 double Tmp = 0;
 double totalError = 0;
+double total_T = 0;
 //******************************************************//
 
 //******************************Helping Functions*******************************//
@@ -335,9 +336,11 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		double expectCx = processCx * cosine - processCy * sine;// double expectCy = processCx * cosine + processCx * sine;
 		double expectDx = processDx * cosine - processDy * sine;// double expectDy = processDx * cosine + processDx * sine;
 		double curError = max(max(abs(expectAx), abs(expectBx)), max(abs(expectCx), abs(expectDx))) - 0.5 * Car_W;
-		totalError += curError;
+		totalError += 1.06638779900189 * curError;
+		total_T += 0.0208625612715938;
 
 		printf("totalError:%f\t", totalError);
+		printf("total_T:%f\t", total_T);
 		printf("curError:%f\n\n", curError);
 		/******************************************End by Yuan Wei********************************************/
 	}
