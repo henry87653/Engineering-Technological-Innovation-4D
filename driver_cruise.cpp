@@ -231,6 +231,12 @@ double offset = 0;										//
 
 double Tmp = 0;
 
+int TypeJudgeCounter1 = 0;
+
+int TypeJudgeCounter2 = 0;
+
+bool IsDirt = 0;
+
 //******************************************************//
 
 
@@ -403,13 +409,23 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 		*/
 
+		//Judge the type of road
+		TypeJudgeCounter1++;
 
+		if (_speed > 30 && _speed < 60) {
+			TypeJudgeCounter2++;
+		}
+		else {
+			if (TypeJudgeCounter1 < 300 && TypeJudgeCounter2 > 40) {	//TypeJudgeCounter1 < 300 is to ensure the judge is made at begin
+				IsDirt = 1;
+			}
+		}
 
 		//CircleSpeed (startPoint+0, + delta, + 2 * delta);
 
 		//CircleNear (10,20,30)  CircleMiddle(10,30,50)  CircleFar(70,90,110)  CircleFoot(1,2,3)
 
-		printf("CircleSpeed:%4.1f \t CircleNear(10,20,30):%4.1f \t CircleMiddle(10,30,50):%4.1f \t  CircleFar(70,90,110):%4.1f \t  CircleFoot(1,2,3):%4.1f \t", CircleSpeed.r, CircleNear.r, CircleMiddle.r, CircleFar.r, CircleFoot.r);
+
 
 
 
@@ -481,14 +497,6 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 
 
-		printf("expectedSpeed:%3.1f\t", expectedSpeed);
-
-		printf("curSpeedErr:%3.1f\t", curSpeedErr);
-
-		printf("speedErrSum:%3.1f\t", speedErrSum);
-
-		//printf(":%f\t", );
-
 		curSpeedErr = expectedSpeed - _speed;
 
 		speedErrSum = 0.1 * speedErrSum + curSpeedErr;
@@ -548,13 +556,38 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 		}
 
-		printf("*cmdSteer:%6.5f\t", *cmdSteer);
+		printf("Counter1: %d Counter2:%d speed: %f IsDirt:%d\n", TypeJudgeCounter1,TypeJudgeCounter2, _speed,IsDirt);
 
-		printf("*cmdAcc:%5.4f\t", *cmdAcc);
+		//printf("*cmdSteer:%6.5f\t", *cmdSteer);
 
-		printf("*cmdBrake:%5.4f\t", *cmdBrake);
+		//printf("*cmdAcc:%5.4f\t", *cmdAcc);
 
-		printf("cmdGear:%d\t", *cmdGear);//ldx:can be no asterisk(*)???
+		//printf("*cmdBrake:%5.4f\t", *cmdBrake);
+
+		//printf("cmdGear:%d\t", *cmdGear);//ldx:can be no asterisk(*)???
+
+		//printf("CircleSpeed:%4.1f \t CircleNear(10,20,30):%4.1f \t CircleMiddle(10,30,50):%4.1f \t  CircleFar(70,90,110):%4.1f \t  CircleFoot(1,2,3):%4.1f \t", CircleSpeed.r, CircleNear.r, CircleMiddle.r, CircleFar.r, CircleFoot.r);
+
+		//printf("expectedSpeed:%3.1f\t", expectedSpeed);
+
+		//printf("curSpeedErr:%3.1f\t", curSpeedErr);
+
+		//printf("speedErrSum:%3.1f\t", speedErrSum);
+
+		//printf(":%f\t", );
+
+		//print important param?   printf(":%f\t", );
+
+		//printf("D_errDiff:%5.2f\t", D_errDiff);
+
+		//printf("D_errSum:%5.2f\t", D_errSum);
+
+		//print some useful info on the terminal
+
+		//printf("D_err : %5.2f \n\n", D_err);
+
+		//printf("cmdSteer : %f \n", *cmdSteer);	
+
 
 
 
@@ -615,11 +648,6 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 
 
-		//print important param?   printf(":%f\t", );
-
-		printf("D_errDiff:%5.2f\t", D_errDiff);
-
-		printf("D_errSum:%5.2f\t", D_errSum);
 
 
 
@@ -629,11 +657,6 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 
 
-		//print some useful info on the terminal
-
-		printf("D_err : %5.2f \n\n", D_err);
-
-		//printf("cmdSteer : %f \n", *cmdSteer);	
 
 		/******************************************End by Yuan Wei********************************************/
 
