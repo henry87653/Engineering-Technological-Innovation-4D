@@ -4,10 +4,10 @@
 //        All rights reserved
 //
 //        filename :driver_cruise.cpp
-//		  version :1.2.8
+//		  version :1.2.9
 //        description :
 /*
-		modified the dirt condition:kd 0.5------>5
+		modified the dirt condition: total T&E of dirt is now lower than Liu's code
 		*/
 		//						
 		//
@@ -228,7 +228,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 		if (IsDirt)
 		{
-			expectedSpeed = 1 * 20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);
+			expectedSpeed =constrain(0,70,20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333));
 		}
 		else {
 			expectedSpeed = 20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);
@@ -311,9 +311,9 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		//set the param of PID controller  //ldx: reset all 3 param below
 		if (IsDirt) {
 
-			kp_d = 1;//ldx: modified
+			kp_d = 2;//ldx: modified
 			ki_d = 0;//ldx: modified
-			kd_d = 5;
+			kd_d = 3;
 		}
 		else {
 			kp_d = 1;//ldx: modified
@@ -322,19 +322,38 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		}
 
 		//get the error //ldx: modify this to get a better D_err function?
-		if (_speed < 20)//at the begining (initial)
-			D_err = -atan2(_midline[5][0], _midline[5][1]);//original[5]
-		else
-			D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));//only track the aiming point on the middle line
-		//ldx: modified ABOVE D_err
+		if(IsDirt){
+			if (_speed < 20)//at the begining (initial)
+				D_err = -atan2(_midline[5][0], _midline[5][1]);//original[5]
+			else
+				D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));//only track the aiming point on the middle line
+			//ldx: modified ABOVE D_err
 
-		//the differential and integral operation 
-		D_errDiff = D_err - Tmp;
-		D_errSum = 0.2 * D_errSum + D_err;//ldx: modified
-		Tmp = D_err;
+			//the differential and integral operation 
+			D_errDiff = D_err - Tmp;
+			D_errSum = 0.2 * D_errSum + D_err;//ldx: modified
+			Tmp = D_err;
 
-		//set the error and get the cmdSteer // get the NEW cmdSteer?
-		*cmdSteer = constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
+			//set the error and get the cmdSteer // get the NEW cmdSteer?
+			*cmdSteer = constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
+
+		}
+		else {
+			if (_speed < 20)//at the begining (initial)
+				D_err = -atan2(_midline[5][0], _midline[5][1]);//original[5]
+			else
+				D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));//only track the aiming point on the middle line
+			//ldx: modified ABOVE D_err
+
+			//the differential and integral operation 
+			D_errDiff = D_err - Tmp;
+			D_errSum = 0.2 * D_errSum + D_err;//ldx: modified
+			Tmp = D_err;
+
+			//set the error and get the cmdSteer // get the NEW cmdSteer?
+			*cmdSteer = constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
+		}
+	
 
 
 
