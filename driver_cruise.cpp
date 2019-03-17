@@ -322,37 +322,19 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		}
 
 		//get the error //ldx: modify this to get a better D_err function?
-		if(IsDirt){
-			if (_speed < 20)//at the begining (initial)
-				D_err = -atan2(_midline[5][0], _midline[5][1]);//original[5]
-			else
-				D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));//only track the aiming point on the middle line
-			//ldx: modified ABOVE D_err
+		if (_speed < 20)//at the begining (initial)
+			D_err = -atan2(_midline[5][0], _midline[5][1]);//original[5]
+		else
+			D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));//only track the aiming point on the middle line
+		//ldx: modified ABOVE D_err
 
-			//the differential and integral operation 
-			D_errDiff = D_err - Tmp;
-			D_errSum = 0.2 * D_errSum + D_err;//ldx: modified
-			Tmp = D_err;
+		//the differential and integral operation 
+		D_errDiff = D_err - Tmp;
+		D_errSum = 0.2 * D_errSum + D_err;//ldx: modified
+		Tmp = D_err;
 
-			//set the error and get the cmdSteer // get the NEW cmdSteer?
-			*cmdSteer = constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
-
-		}
-		else {
-			if (_speed < 20)//at the begining (initial)
-				D_err = -atan2(_midline[5][0], _midline[5][1]);//original[5]
-			else
-				D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));//only track the aiming point on the middle line
-			//ldx: modified ABOVE D_err
-
-			//the differential and integral operation 
-			D_errDiff = D_err - Tmp;
-			D_errSum = 0.2 * D_errSum + D_err;//ldx: modified
-			Tmp = D_err;
-
-			//set the error and get the cmdSteer // get the NEW cmdSteer?
-			*cmdSteer = constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
-		}
+		//set the error and get the cmdSteer // get the NEW cmdSteer?
+		*cmdSteer = constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
 	
 
 
