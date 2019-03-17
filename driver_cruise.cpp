@@ -4,10 +4,12 @@
 //        All rights reserved
 //
 //        filename :driver_cruise.cpp
-//		  version :1.2.9
-//        description :
+//		  version :1.3.1
+//        description :1.we can try to change the steer function to get a huge progress.
+//						2.we can also modify some prms to get a slightly nicer result.
+//						3.we should modify the dirt condition.
 /*
-		modified the dirt condition: total T&E of dirt is now lower than Liu's code
+		
 		*/
 		//						
 		//
@@ -218,7 +220,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			TypeJudgeCounter2++;
 		}
 		else {
-			if (TypeJudgeCounter1 < 400 && TypeJudgeCounter2 > 105) {	//TypeJudgeCounter1 < 300 is to ensure the judge is made at begin
+			if (TypeJudgeCounter1 < 400 && TypeJudgeCounter2 > 57) {	//TypeJudgeCounter1 < 300 is to ensure the judge is made at begin
 				IsDirt = 1;
 			}
 		}
@@ -232,7 +234,9 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			//expectedSpeed = constrain(0, 200, 20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333));
 		}
 		else {
-			expectedSpeed = 20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);
+			expectedSpeed = 1 * 20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);
+			//expectedSpeed = constrain(0, 90, 20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333));
+
 		}
 
 
@@ -335,6 +339,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			D_err = -atan2(_midline[5][0], _midline[5][1]);//original[5]
 		else
 			D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));//only track the aiming point on the middle line
+			//D_err = 2 * (_yaw - 2.9 * atan2(_midline[1][0], _midline[1][1]));//only track the aiming point on the middle line
 		//ldx: modified ABOVE D_err
 
 		//the differential and integral operation 
@@ -374,7 +379,8 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		total_T += 0.0208625612715938;
 		*/
 
-		if (!isStartFinish && _speed > 40) {//30, 45?
+		//if (!isStartFinish && _speed > 40) {//30, 45?
+		if (!isStartFinish && _speed > 60) {//30, 45?
 			isStartFinish = true;
 			printf("\n Start Finished!\n");
 		}
