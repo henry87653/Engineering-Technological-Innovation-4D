@@ -228,7 +228,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 		if (IsDirt)
 		{
-			expectedSpeed =constrain(0,70,20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333));
+			expectedSpeed =constrain(0,90,20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333));
 		}
 		else {
 			expectedSpeed = 20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);
