@@ -218,7 +218,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			TypeJudgeCounter2++;
 		}
 		else {
-			if (TypeJudgeCounter1 < 300 && TypeJudgeCounter2 > 40) {	//TypeJudgeCounter1 < 300 is to ensure the judge is made at begin
+			if (TypeJudgeCounter1 < 400 && TypeJudgeCounter2 > 105) {	//TypeJudgeCounter1 < 300 is to ensure the judge is made at begin
 				IsDirt = 1;
 			}
 		}
@@ -229,6 +229,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		if (IsDirt)
 		{
 			expectedSpeed =constrain(0,90,20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333));
+			//expectedSpeed = constrain(0, 200, 20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333));
 		}
 		else {
 			expectedSpeed = 20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);
@@ -316,13 +317,21 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			kd_d = 3;
 		}
 		else {
-			kp_d = 1;//ldx: modified
-			ki_d = 0;//ldx: modified
-			kd_d = 0.5;
+			if (!isStartFinish) {
+				kp_d = 30;//ldx: modified
+				ki_d = 0;//ldx: modified
+				kd_d = 30;
+				*cmdAcc = 1;
+			}
+			else {
+				kp_d = 1;//ldx: modified
+				ki_d = 0;//ldx: modified
+				kd_d = 0.5;
+			}
 		}
 
 		//get the error //ldx: modify this to get a better D_err function?
-		if (_speed < 20)//at the begining (initial)
+		if (!isStartFinish)//at the begining (initial)
 			D_err = -atan2(_midline[5][0], _midline[5][1]);//original[5]
 		else
 			D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));//only track the aiming point on the middle line
@@ -376,7 +385,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 		//print some useful info on the terminal
 
-		printf("total_T:%f\t    ", total_T);
+		//printf("total_T:%f\t    ", total_T);
 		//printf("IsDirt:%d\t", IsDirt);
 		//printf("CircleSpeed:%4.1f \t CircleNear(10,20,30):%4.1f \t CircleMiddle(10,30,50):%4.1f \t  CircleFar(70,90,110):%4.1f \t  CircleFoot(1,2,3):%4.1f \n    ", CircleSpeed.r, CircleNear.r, CircleMiddle.r, CircleFar.r, CircleFoot.r);
 
@@ -394,8 +403,9 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		//printf("D_errSum:%5.2f\n    ", D_errSum);
 
 		//printf("curError:%f\t", curError);
-		printf("startError:%f\t", startError);
-		printf("totalError:%f\n", totalError);
+		//printf("startError:%f\t", startError);
+		//printf("totalError:%f\n", totalError);
+		printf("counter1: %d\tcounter2: %d\tIsDirt:%d\n", TypeJudgeCounter1, TypeJudgeCounter2,IsDirt);
 
 		/******************************************End by Yuan Wei********************************************/
 	}
