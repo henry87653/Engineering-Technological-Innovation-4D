@@ -394,7 +394,11 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 		//print some useful info on the terminal
 
+<<<<<<< HEAD
 		printf("\ntotal_T:%f\t    ", total_T);
+=======
+		printf("total_T:%f\t    ", total_T);
+>>>>>>> parent of 1ae359e... PIDv1.2.7_test on Liu's code
 		//printf("IsDirt:%d\t", IsDirt);
 		//printf("CircleSpeed:%4.1f \t CircleNear(10,20,30):%4.1f \t CircleMiddle(10,30,50):%4.1f \t  CircleFar(70,90,110):%4.1f \t  CircleFoot(1,2,3):%4.1f \n    ", CircleSpeed.r, CircleNear.r, CircleMiddle.r, CircleFar.r, CircleFoot.r);
 
