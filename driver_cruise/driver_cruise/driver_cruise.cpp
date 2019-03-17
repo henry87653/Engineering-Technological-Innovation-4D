@@ -4,21 +4,16 @@
 //        All rights reserved
 //
 //        filename :driver_cruise.cpp
-//		  version :1.2.7
+//		  version :1.2.9
 //        description :
 /*
-		ADD a flag IsTimeStart.
-		REDUCE those stupid empty lines!
-		DEFINE a startError(t > 0 to speed < 40)
+		UNSUCCESSFUL CHANGE starting control (change D_err if !isStart)
+			修改speed < 40控制（起步阶段控制）
 		
-		REDUCE print functions. Put them TOGRTHER.
-		NEED to improve:IMPROVE the Steering function (D_err) to avoid oscillation
-		Prevent the worst case: modify the cmdacc = 0.05 when  steer > 0.7
-		A grater BRAKE ?
 		*/
 		//						
 		//
-		//        modified by Henry Lu at  March/17/2019 00:33
+		//        modified by Henry Lu at  March/17/2019 11:08
 		//        https://github.com/henry87653/Engineering-Technological-Innovation-4D
 		//
 		//============================================================================================
@@ -175,7 +170,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		{
 			IsTimeStart = true; printf("\n TimeStart!\n");
 		}
-		
+
 		//ldx:we can modify
 
 		// Speed Control
@@ -230,10 +225,17 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			}
 		}
 
-		//CircleSpeed (startPoint+0, + delta, + 2 * delta);
-		//CircleNear (10,20,30)  CircleMiddle(10,30,50)  CircleFar(70,90,110)  CircleFoot(1,2,3)
 
 		//expectedSpeed need to be modified (using the ABOVE 5 circles)
+
+		if (IsDirt)
+		{
+			expectedSpeed = 1 * 20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);
+		}
+		else {
+			expectedSpeed = 20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);
+		}
+
 
 		//Liu's Judging function? simplified edition
 		/*
@@ -258,7 +260,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			expectedSpeed = 60;//temporary
 		*/
 
-		expectedSpeed = 20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);//21.5
+		
 
 		/*
 		if (CircleSpeed.r <= 60)
@@ -270,32 +272,41 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 		curSpeedErr = expectedSpeed - _speed;
 		speedErrSum = 0.1 * speedErrSum + curSpeedErr;
-		if (curSpeedErr > 0)			//lackspeed
-		{
-			if (abs(*cmdSteer) < 0.6)//-1.0 <= *cmdSteer <=  1.0; when *cmdSteer is small
-			{
-				//printf("*cmdSteer small\t");
-				*cmdAcc = constrain(0.0, 1.0, kp_s * curSpeedErr + ki_s * speedErrSum + offset);
-				*cmdBrake = 0;
+		
+		if (!isStartFinish) {
+			//*cmdAcc = constrain(0.0, 1.0, kp_s * curSpeedErr + ki_s * speedErrSum + offset);
+			printf("ACC:%f\t", (kp_s * curSpeedErr + ki_s * speedErrSum + offset) / (total_T + 0.5));
+			*cmdAcc = constrain(0.0, 1.0, 0.15 * pow((kp_s * curSpeedErr + ki_s * speedErrSum + offset), 2)/(total_T+0.5));
+			*cmdBrake = 0;
 			}
-			else if (abs(*cmdSteer) > 0.70)//when *cmdSteer is large
+		else {
+			if (curSpeedErr > 0)			//lackspeed
 			{
-				//printf("*cmdSteer large\t");
-				*cmdAcc = 0.005 + offset;
-				*cmdBrake = 0;
-			}
-			else//when *cmdSteer is in the middle ( 0.6 to 0.7 )
-			{
-				//printf("*cmdSteer middle\t");
-				*cmdAcc = 0.11 + offset;
-				*cmdBrake = 0;
-			}
+				if (abs(*cmdSteer) < 0.6)//-1.0 <= *cmdSteer <=  1.0; when *cmdSteer is small
+				{
+					//printf("*cmdSteer small\t");
+					*cmdAcc = constrain(0.0, 1.0, kp_s * curSpeedErr + ki_s * speedErrSum + offset);
+					*cmdBrake = 0;
+				}
+				else if (abs(*cmdSteer) > 0.70)//when *cmdSteer is large
+				{
+					//printf("*cmdSteer large\t");
+					*cmdAcc = 0.005 + offset;
+					*cmdBrake = 0;
+				}
+				else//when *cmdSteer is in the middle ( 0.6 to 0.7 )
+				{
+					//printf("*cmdSteer middle\t");
+					*cmdAcc = 0.11 + offset;
+					*cmdBrake = 0;
+				}
 
-		}
-		else if (curSpeedErr < 0)		//overspeed
-		{
-			*cmdBrake = constrain(0.0, 0.8, -kp_s * curSpeedErr / 5 - offset / 3);
-			*cmdAcc = 0;
+			}
+			else if (curSpeedErr < 0)		//overspeed
+			{
+				*cmdBrake = constrain(0.0, 0.8, -kp_s * curSpeedErr / 5 - offset / 3);
+				*cmdAcc = 0;
+			}
 		}
 
 		updateGear(cmdGear);//ldx:huan dang
@@ -309,15 +320,31 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		*/
 		// Direction Control		
 		//set the param of PID controller  //ldx: reset all 3 param below
-		kp_d = 1;//ldx: modified
-		ki_d = 0;//ldx: modified
-		kd_d = 0.5;
+		if (IsDirt) {
+
+			kp_d = 1;//ldx: modified
+			ki_d = 0;//ldx: modified
+			kd_d = 5;
+		}
+		else if(isStartFinish){
+			kp_d = 1;
+			ki_d = 0;
+			kd_d = 0.5;
+		}
+		else {//Start NOT Finish
+			kp_d = 0.2;
+			ki_d = 0;
+			kd_d = 0.5;
+		}
 
 		//get the error //ldx: modify this to get a better D_err function?
-		if (_speed < 20)//at the begining (initial)
-			D_err = -atan2(_midline[5][0], _midline[5][1]);//original[5]
-		else
-			D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));//only track the aiming point on the middle line
+
+		if(_speed < 20){
+		//if(!isStartFinish){
+			D_err = -atan2(_midline[10][0], _midline[10][1]);//original[5]
+			//*cmdAcc = constrain(0,1.0,0.3+total_T);
+		}
+		else D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));//only track the aiming point on the middle line
 		//ldx: modified ABOVE D_err
 
 		//the differential and integral operation 
@@ -356,18 +383,18 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		total_T += 0.0208625612715938;
 		*/
 
-		if (!isStartFinish && _speed > 40){//30, 45?
+		if (!isStartFinish && _speed > 40) {//30, 45?
 			isStartFinish = true;
 			printf("\n Start Finished!\n");
 		}
-		
-		if(IsTimeStart)totalError += 1.4567355660715 * curError;//1.06638779900189 * ,
-		if(!isStartFinish && IsTimeStart)startError += 1.4567355660715 * curError;
-		if(IsTimeStart)total_T += 0.0210024912566473;//0.0208625612715938, 0.02
+
+		if (IsTimeStart)totalError += 1.4567355660715 * curError;//1.06638779900189 * ,
+		if (!isStartFinish && IsTimeStart)startError += 1.4567355660715 * curError;
+		if (IsTimeStart)total_T += 0.0210024912566473;//0.0208625612715938, 0.02
 
 		//print some useful info on the terminal
 
-		//printf("total_T:%f\t    ", total_T);
+		printf("\ntotal_T:%f\t    ", total_T);
 		//printf("IsDirt:%d\t", IsDirt);
 		//printf("CircleSpeed:%4.1f \t CircleNear(10,20,30):%4.1f \t CircleMiddle(10,30,50):%4.1f \t  CircleFar(70,90,110):%4.1f \t  CircleFoot(1,2,3):%4.1f \n    ", CircleSpeed.r, CircleNear.r, CircleMiddle.r, CircleFar.r, CircleFoot.r);
 
@@ -384,20 +411,19 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		//printf("D_errDiff:%5.2f\t", D_errDiff);
 		//printf("D_errSum:%5.2f\n    ", D_errSum);
 
-		printf("%f\n", curError);
 		//printf("curError:%f\t", curError);
-		//printf("startError:%f\t", startError);
-		//printf("totalError:%f\n", totalError);
+		printf("startError:%f\t", startError);
+		printf("totalError:%f\n", totalError);
 
 		/******************************************End by Yuan Wei********************************************/
 	}
 }
 
-void PIDParamSetter()
+void PIDParamSetter()//SET PID parameters for starting
 {
-
-	kp_s = 0.02;
-	ki_s = 0;
+	//NEED to modify?
+	kp_s = 0.02;//ldx: modified
+	ki_s = 0;//ldx: modified
 	kd_s = 0;
 	kp_d = 0.5;//ldx: modified
 	ki_d = 0.151;
