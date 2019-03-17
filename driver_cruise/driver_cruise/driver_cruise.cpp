@@ -367,7 +367,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 		//print some useful info on the terminal
 
-		printf("total_T:%f\t    ", total_T);
+		//printf("total_T:%f\t    ", total_T);
 		//printf("IsDirt:%d\t", IsDirt);
 		//printf("CircleSpeed:%4.1f \t CircleNear(10,20,30):%4.1f \t CircleMiddle(10,30,50):%4.1f \t  CircleFar(70,90,110):%4.1f \t  CircleFoot(1,2,3):%4.1f \n    ", CircleSpeed.r, CircleNear.r, CircleMiddle.r, CircleFar.r, CircleFoot.r);
 
@@ -384,9 +384,10 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		//printf("D_errDiff:%5.2f\t", D_errDiff);
 		//printf("D_errSum:%5.2f\n    ", D_errSum);
 
+		printf("%f\n", curError);
 		//printf("curError:%f\t", curError);
-		printf("startError:%f\t", startError);
-		printf("totalError:%f\n", totalError);
+		//printf("startError:%f\t", startError);
+		//printf("totalError:%f\n", totalError);
 
 		/******************************************End by Yuan Wei********************************************/
 	}
