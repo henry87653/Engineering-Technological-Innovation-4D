@@ -84,25 +84,25 @@ typedef struct Circle									//
 }circle;												//
 //******************************************************//
 
-//********************PID parameters*************************//
-double kp_s;	//kp for speed							     //
-double ki_s;	//ki for speed							     //
-double kd_s;	//kd for speed							     //
-double kp_d;	//kp for direction						     //
-double ki_d;	//ki for direction					    	 //
-double kd_d;	//kd for direction						     //
-// Direction Control Variables						         //
-double D_err;//direction error					             //
-double D_errDiff = 0;//direction difference(Differentiation) //
-double D_errSum = 0;//sum of direction error(Integration)      //
-// Speed Control Variables								     //
-circle CircleSpeed;												     //
-double expectedSpeed;//      							     //
-double curSpeedErr;//speed error   		                     //
-double speedErrSum = 0;//sum of speed error(Integration)       //
-int startPoint;											     //
-int delta = 20;												 //
-//***********************************************************//
+//********************PID parameters****************************//
+double kp_s;	//kp for speed									//
+double ki_s;	//ki for speed									//
+double kd_s;	//kd for speed									//
+double kp_d;	//kp for direction								//
+double ki_d;	//ki for direction					    		//
+double kd_d;	//kd for direction								//
+// Direction Control Variables									//
+double D_err;//direction error									//
+double D_errDiff = 0;//direction difference(Differentiation)	//
+double D_errSum = 0;//sum of direction error(Integration)		//
+// Speed Control Variables										//
+circle CircleSpeed;												//
+double expectedSpeed;        									//
+double curSpeedErr;				  								//
+double speedErrSum = 0;//sum of speed error(Integration)		//
+int startPoint;													//
+int delta = 20;													//
+//**************************************************************//
 
 //*******************Other parameters*******************//
 const int topGear = 2;									//
