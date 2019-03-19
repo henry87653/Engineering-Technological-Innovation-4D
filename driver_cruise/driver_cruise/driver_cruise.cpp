@@ -4,12 +4,11 @@
 //        All rights reserved
 //
 //        filename :driver_cruise.cpp
-//		  version :1.3.3
+//		  version :1.3.4
 //        description :
+//				modify the dirt condition.
+//				/*Dirt*/ expectedSpeed = constrain(0, 78, 21.95 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333));
 //
-//1.we can try to change the steer function to get a huge progress.
-//						2.we can also modify some prms to get a slightly nicer result.
-//						3.we should modify the dirt condition.
 /*
 
 		*/
@@ -232,7 +231,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 		if (IsDirt)
 		{
-			expectedSpeed = constrain(0, 80, 22 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333));
+			expectedSpeed = constrain(0, 78, 21.95 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333));
 			//expectedSpeed = constrain(0, 200, 20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333));
 		}
 		else {
