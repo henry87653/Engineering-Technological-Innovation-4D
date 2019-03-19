@@ -4,8 +4,10 @@
 //        All rights reserved
 //
 //        filename :driver_cruise.cpp
-//		  version :1.3.1
-//        description :1.we can try to change the steer function to get a huge progress.
+//		  version :1.3.3
+//        description :
+//
+//1.we can try to change the steer function to get a huge progress.
 //						2.we can also modify some prms to get a slightly nicer result.
 //						3.we should modify the dirt condition.
 /*
@@ -13,7 +15,7 @@
 		*/
 		//						
 		//
-		//        modified by yc at  March/17/2019 09:43
+		//        modified by Lu at  March/19/2019 19:
 		//        https://github.com/henry87653/Engineering-Technological-Innovation-4D
 		//
 		//============================================================================================
@@ -230,7 +232,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 		if (IsDirt)
 		{
-			expectedSpeed = constrain(0, 90, 20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333));
+			expectedSpeed = constrain(0, 80, 22 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333));
 			//expectedSpeed = constrain(0, 200, 20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333));
 		}
 		else {
@@ -401,12 +403,12 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		//printf("IsDirt:%d\t", IsDirt);
 		//printf("CircleSpeed:%4.1f \t CircleNear(10,20,30):%4.1f \t CircleMiddle(10,30,50):%4.1f \t  CircleFar(70,90,110):%4.1f \t  CircleFoot(1,2,3):%4.1f \n    ", CircleSpeed.r, CircleNear.r, CircleMiddle.r, CircleFar.r, CircleFoot.r);
 
-		//printf("expectedSpeed:%3.1f\t", expectedSpeed);
-		//printf("curSpeedErr:%3.1f\t", curSpeedErr);
+		printf("expectedSpeed:%3.1f\t", expectedSpeed);
+		//printf("curSpeedErr:%3.1f\n", curSpeedErr);
 		//printf("speedErrSum:%3.1f\n    ", speedErrSum);
 
 		//printf("*cmdSteer:%6.5f\t", *cmdSteer);
-		printf("*cmdAcc:%5.4f\t", *cmdAcc);
+		//printf("*cmdAcc:%5.4f\t", *cmdAcc);
 		//printf("*cmdBrake:%5.4f\t", *cmdBrake);
 		//printf("cmdGear:%d\n    ", *cmdGear);//ldx:can be no asterisk(*)???
 
@@ -414,7 +416,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		//printf("D_errDiff:%5.2f\t", D_errDiff);
 		//printf("D_errSum:%5.2f\n    ", D_errSum);
 
-		//printf("curError:%f\t", curError);
+		printf("curError:%f\n", curError);
 		//printf("startError:%f\t", startError);
 		//printf("totalError:%f\n", totalError);
 		//printf("counter1: %d\tcounter2: %d\tIsDirt:%d\n", TypeJudgeCounter1, TypeJudgeCounter2, IsDirt);
