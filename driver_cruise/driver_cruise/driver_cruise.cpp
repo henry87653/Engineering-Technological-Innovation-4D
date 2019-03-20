@@ -4,10 +4,10 @@
 //        All rights reserved
 //
 //        filename :driver_cruise.cpp
-//		  version :1.3.5
+//		  version :1.3.7
 //        description :
-//				modify the dirt D_err.
-//				/*Dirt*/ D_err = 2 * (_yaw - 3.99 * atan2(_midline[1][0], _midline[1][1]));
+//				modify the left five D_err.
+//				divide into circleSpeed between 30, 60, 120, 250;
 //
 /*
 
@@ -235,7 +235,13 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			//expectedSpeed = constrain(0, 200, 20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333));
 		}
 		else {
-			expectedSpeed = 1 * 20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);
+			if (TypeJudgeCounter1 < 300) {
+				expectedSpeed = 1 * 20 * pow(min3( CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);
+			}
+			else {
+				expectedSpeed = 1 * 20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333);
+			}
+			
 			//expectedSpeed = constrain(0, 90, 20 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333));
 
 		}
@@ -338,18 +344,25 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		//get the error //ldx: modify this to get a better D_err function?
 		if (!isStartFinish)//at the begining (initial)
 			D_err = -atan2(_midline[5][0], _midline[5][1]);//original[5]
-		else
+		else//Start Finish
 		{
-			if(IsDirt) //DIRT
+			if (IsDirt) //DIRT
 				D_err = 2 * (_yaw - 3.99 * atan2(_midline[1][0], _midline[1][1]));//only track the aiming point on the middle line
-			else // NOT dirt
-				D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));//only track the aiming point on the middle line
+			else // NOT DIRT
+			{
+				if (CircleFoot.r < 30)		D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));
+				else if (CircleFoot.r < 60)	D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));
+				else if (CircleFoot.r < 120)D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));//ldx modify the following two D_err;
+				else if (CircleFoot.r < 250)D_err = 2 * (_yaw - 7.700 * atan2(_midline[1][0], _midline[1][1]));//go a lot, still can divide?
+				else if (CircleFoot.r < 490)D_err = 2 * (_yaw - 3.150 * atan2(_midline[1][0], _midline[1][1]));
+				else						D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));
+			}
 		}
-			
-			//D_err = 2 * (_yaw - 2.9 * atan2(_midline[1][0], _midline[1][1]));//only track the aiming point on the middle line
-		//ldx: modified ABOVE D_err
 
-		//the differential and integral operation 
+		//D_err = 2 * (_yaw - 2.9 * atan2(_midline[1][0], _midline[1][1]));//only track the aiming point on the middle line
+	//ldx: modified ABOVE D_err
+
+	//the differential and integral operation 
 		D_errDiff = D_err - Tmp;
 		D_errSum = 0.2 * D_errSum + D_err;//ldx: modified
 		Tmp = D_err;
@@ -407,7 +420,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		//printf("speedErrSum:%3.1f\n    ", speedErrSum);
 
 		//printf("*cmdSteer:%6.5f\t", *cmdSteer);
-		//printf("*cmdAcc:%5.4f\t", *cmdAcc);
+		printf("*cmdAcc:%5.4f\t", *cmdAcc);
 		//printf("*cmdBrake:%5.4f\t", *cmdBrake);
 		//printf("cmdGear:%d\n    ", *cmdGear);//ldx:can be no asterisk(*)???
 
@@ -416,6 +429,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		//printf("D_errSum:%5.2f\n    ", D_errSum);
 
 		printf("curError:%f\n", curError);
+		printf("counter:%d\t", TypeJudgeCounter1);
 		//printf("startError:%f\t", startError);
 		//printf("totalError:%f\n", totalError);
 		//printf("counter1: %d\tcounter2: %d\tIsDirt:%d\n", TypeJudgeCounter1, TypeJudgeCounter2, IsDirt);
