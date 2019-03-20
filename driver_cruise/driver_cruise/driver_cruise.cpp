@@ -4,17 +4,17 @@
 //        All rights reserved
 //
 //        filename :driver_cruise.cpp
-//		  version :1.3.4
+//		  version :1.3.5
 //        description :
-//				modify the dirt condition.
-//				/*Dirt*/ expectedSpeed = constrain(0, 78, 21.95 * pow(min4(CircleFoot.r, CircleNear.r, CircleMiddle.r, CircleFar.r), 0.33333));
+//				modify the dirt D_err.
+//				/*Dirt*/ D_err = 2 * (_yaw - 3.99 * atan2(_midline[1][0], _midline[1][1]));
 //
 /*
 
 		*/
 		//						
 		//
-		//        modified by Lu at  March/19/2019 19:
+		//        modified by Lu at  March/20/2019 14:29
 		//        https://github.com/henry87653/Engineering-Technological-Innovation-4D
 		//
 		//============================================================================================
@@ -341,7 +341,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		else
 		{
 			if(IsDirt) //DIRT
-				D_err = 2 * (_yaw - 3.2 * atan2(_midline[1][0], _midline[1][1]));//only track the aiming point on the middle line
+				D_err = 2 * (_yaw - 3.99 * atan2(_midline[1][0], _midline[1][1]));//only track the aiming point on the middle line
 			else // NOT dirt
 				D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));//only track the aiming point on the middle line
 		}
@@ -418,6 +418,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		printf("curError:%f\n", curError);
 		//printf("startError:%f\t", startError);
 		//printf("totalError:%f\n", totalError);
+		//printf("counter1: %d\tcounter2: %d\tIsDirt:%d\n", TypeJudgeCounter1, TypeJudgeCounter2, IsDirt);
 		//printf("counter1: %d\tcounter2: %d\tIsDirt:%d\n", TypeJudgeCounter1, TypeJudgeCounter2, IsDirt);
 
 		/******************************************End by Yuan Wei********************************************/
