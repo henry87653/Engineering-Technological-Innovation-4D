@@ -4,10 +4,21 @@
 //        All rights reserved
 //
 //        filename :driver_cruise.cpp
-//		  version :1.3.7
+//		  version :2.0.0
 //        description :
 //				modify the left five D_err.
 //				divide into circleSpeed between 30, 60, 120, 250;
+					/*
+						else //NOT DIRT
+					{
+					if (CircleFoot.r < 30)		D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));
+					else if (CircleFoot.r < 60)	D_err = 2 * (_yaw - 3.6 * atan2(_midline[1][0], _midline[1][1]));
+					else if (CircleFoot.r < 120)D_err = 2 * (_yaw - 4.43 * atan2(_midline[1][0], _midline[1][1]));//<====================ldx modified
+					else if (CircleFoot.r < 250)D_err = 2 * (_yaw - 7.700 * atan2(_midline[1][0], _midline[1][1]));//go a lot, still can divide?
+					else if (CircleFoot.r < 490)D_err = 2 * (_yaw - 3.150 * atan2(_midline[1][0], _midline[1][1]));
+					else						D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));
+					}
+					*/
 //
 /*
 
@@ -351,8 +362,8 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			else // NOT DIRT
 			{
 				if (CircleFoot.r < 30)		D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));
-				else if (CircleFoot.r < 60)	D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));
-				else if (CircleFoot.r < 120)D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));//ldx modify the following two D_err;
+				else if (CircleFoot.r < 60)	D_err = 2 * (_yaw - 3.6 * atan2(_midline[1][0], _midline[1][1]));
+				else if (CircleFoot.r < 120)D_err = 2 * (_yaw - 4.43 * atan2(_midline[1][0], _midline[1][1]));//<====================ldx modified
 				else if (CircleFoot.r < 250)D_err = 2 * (_yaw - 7.700 * atan2(_midline[1][0], _midline[1][1]));//go a lot, still can divide?
 				else if (CircleFoot.r < 490)D_err = 2 * (_yaw - 3.150 * atan2(_midline[1][0], _midline[1][1]));
 				else						D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));
