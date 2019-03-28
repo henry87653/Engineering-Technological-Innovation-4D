@@ -1,3 +1,4 @@
+/*
 //============================================================================================
 //
 //        Copyright (C) 2019
@@ -8,7 +9,6 @@
 //        description :
 //				modify the left five D_err.
 //				divide into circleSpeed between 30, 60, 120, 250;
-					/*
 						else //NOT DIRT
 					{
 					if (CircleFoot.r < 30)		D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));
@@ -18,8 +18,8 @@
 					else if (CircleFoot.r < 490)D_err = 2 * (_yaw - 3.150 * atan2(_midline[1][0], _midline[1][1]));
 					else						D_err = 2 * (_yaw - 3 * atan2(_midline[1][0], _midline[1][1]));
 					}
-					*/
 //
+*/
 /*
 
 		*/
