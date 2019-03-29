@@ -59,12 +59,12 @@ static int _gearbox;
 static float _Leader_X, _Leader_Y;
 const int topGear = 6;		
 float distance;
-float expectedDistance;        //需要定参数
+float expectedDistance;        //most important
 float leaderAcc;
 float kAcc = 0.5;
 float leaderSpeed;
-float lastDistance;         //用于计算前车的速度
-float lastLeaderSpeed;      //计算前车加速度
+float lastDistance;         
+float lastLeaderSpeed;      
 float D_err = 0;
 float S_err = 0;
 float D_errSum = 0;
@@ -106,25 +106,20 @@ static void userDriverGetParam(float LeaderXY[2], float midline[200][2], float y
 static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, int* cmdGear) {
 	/* write your own code here */
 	distance = pow((_Leader_X*_Leader_X + _Leader_Y * _Leader_Y), 0.5);
-	leaderSpeed = _speed + (distance - lastDistance) * 180;
+	leaderSpeed = _speed + (distance - lastDistance) * 180;   //the speed of leader
 	lastDistance = distance;
-	leaderAcc = (leaderSpeed - lastLeaderSpeed) / 0.02;
+	leaderAcc = (leaderSpeed - lastLeaderSpeed) / 0.02;       //the acc of leader
 	lastLeaderSpeed = leaderSpeed;
-	D_err = distance - expectedDistance;
+	//D_err = distance - expectedDistance;
 	S_err = _speed - leaderSpeed;
-	D_errDiff = (D_err - LastTimeDerr) / 0.02;
-	LastTimeDerr = D_err;
-
-
-
-	kp_d = -1 * (_speed*0.01);
-	ki_d = 0.003*0.02;
-	kd_d = -0.00012;
+	//D_errDiff = (D_err - LastTimeDerr) / 0.02;
+	//D_errSum = 0.2 * D_errSum + D_err;
+	//LastTimeDerr = D_err;
 
 	double offset = 0;
 	double threshold = 5;
 
-	//ExpectedDistance
+	//ExpectedDistance (most important)
 	if (_speed < 50)
 	{
 		offset = 0;
@@ -137,15 +132,11 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	{
 		offset = 0.3 * threshold + 0.7*threshold*(_speed - 150) / 50;
 	}
-	else if (_speed < 250)
+	else 
 	{
 		offset = threshold;
 	}
-	else if (_speed > 200)
-	{
-		offset = threshold;
-	}
-
+	
 	if (_speed < 80 && leaderAcc>30)
 	{
 		offset = 0.3;
@@ -155,37 +146,47 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		offset = 5.7;
 	}
 
-	expectedDistance = 10.7 + offset;
+	expectedDistance = 12+ offset;
+
+
 	/* you can modify the print code here to show what you want */
-	printf("speed %.3f Leader XY(%.3f, %.3f)\n", _speed, _Leader_X, _Leader_Y);
 
 
-	//转向跟踪
-	if (distance < expectedDistance - 0.5 && S_err>0)
+	//speed control
+	if (distance < expectedDistance-0.5  && S_err>0)
 	{
+		printf("  1");
 		*cmdAcc = 0;
 		*cmdBrake = 1;
 	}
 	else if (distance < expectedDistance && S_err < 2 * (D_err + kAcc * leaderAcc))
 	{
-		*cmdAcc = 1;
-		*cmdBrake = 0;
+		*cmdAcc = 0;
+		*cmdBrake = 1;
+		printf("  2");
+
 	}
 	else if (distance < expectedDistance && S_err>2 * (D_err + kAcc * leaderAcc))
 	{
 		*cmdAcc = 0;
 		*cmdBrake = S_err / 5;
+		printf("  3");
+
 	}
 
 	else if (distance > expectedDistance && S_err < 1 * (D_err + kAcc * leaderAcc))
 	{
-		*cmdAcc = 1;
+		*cmdAcc = 0.8;
 		*cmdBrake = 0;
+		printf("  4");
+
 	}
 	else if (distance > expectedDistance && S_err > 1 * (D_err + kAcc * leaderAcc))
 	{
 		*cmdAcc = 0;
 		*cmdBrake = S_err / 5;
+		printf("  5");
+
 	}
 
 	if (leaderAcc < -50 && distance < expectedDistance + 0.1)
@@ -197,12 +198,30 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		*cmdAcc = -1 * S_err;
 	}
 
+	printf("\nspeed %.3f Leader XY(%.3f, %.3f)\tExpectedistance%f", _speed, _Leader_X, _Leader_Y, expectedDistance);
+
 	updateGear(cmdGear);
-	if (_speed < 10)
+	if (_speed < 40)
 		*cmdGear = 1;
 
-	*cmdSteer = (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
+	//drection control
+	// 
 
+
+	kp_d = 1;
+	ki_d = 0;
+	kd_d = 0.5;
+
+	if (_speed < 20)//at the begining (initial)
+		D_err = -atan2(_Leader_X,_Leader_Y	);//original[5]
+	else
+		D_err = 2 * (_yaw - 3 * atan2(_Leader_X, _Leader_Y));
+
+	D_errDiff = D_err - D_errSum;
+	D_errSum = 0.2 * D_errSum + D_err;//ldx: modified
+	lastDistance= D_err;
+	//*cmdSteer = constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
+	*cmdSteer = (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
 }
 
 
