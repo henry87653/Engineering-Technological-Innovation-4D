@@ -214,8 +214,8 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	D_errSum = 0.2 * D_errSum + D_err;
 
 	//*cmdSteer = 1 * constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
-	//*cmdSteer = 0.5 * constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff) + 0.5 * (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
-	*cmdSteer = (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
+	*cmdSteer = 0.5 * constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff) + 0.5 * (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
+	//*cmdSteer = (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
 
 	/* you can modify the print code here to show what you want */
 	//printf(" follow %.3f leader%.3f   XY(%.3f, %.3f)\n", _speed, leaderSpeed, _Leader_X, _Leader_Y);
