@@ -4,7 +4,7 @@
 
 	file : driver_cruise.cpp
 	description :test error function
-	version: 1.1.1
+	version: 1.1.2
 
 	modified by Lu at  April/7/2019 14:29
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
@@ -112,6 +112,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	double offset = 0;
 	double threshold = 5;
 	//ExpectedDistance
+	//ldx: modify offset
 	if (_speed < 50)
 	{
 		offset = 0;
@@ -133,15 +134,15 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		offset = threshold;
 	}
 	if (_speed < 80 && leaderAcc>30)
-		if (_speed < 80 && leaderAcc>30)
+		if (_speed < 80 && leaderAcc>30)//speed up
 		{
 			offset = 0.3;
 		}
-		else if (_speed > 150 && leaderAcc < -50)
+		else if (_speed > 150 && leaderAcc < -50)//brake
 		{
 			offset = 5.7;
 		}
-	expectedDistance = 10.7 + offset;
+	expectedDistance = 10 + offset;
 
 
 
