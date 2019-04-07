@@ -4,7 +4,7 @@
 
 	file : driver_cruise.cpp
 	description :test error function
-	version: 1.1.2
+	version: 1.1.3
 
 	modified by Lu at  April/7/2019 14:29
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
@@ -229,6 +229,8 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//printf("_Leader_X:%.2f\n", _Leader_X);
 	//printf("_Leader_Y:%.2f\n", _Leader_Y);
 	//printf("total_T:%.2f\n", total_T);
+	printf("leaderAcc:%.0f\n", leaderAcc);
+	printf("leaderSpeed:%.0f\n", leaderSpeed);
 }
 
 
