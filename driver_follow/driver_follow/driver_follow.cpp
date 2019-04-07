@@ -4,7 +4,7 @@
 
 	file : driver_cruise.cpp
 	description :test error function
-	version: 1.0.10
+	version: 1.1.1
 
 	modified by Lu at  April/7/2019 14:29
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
@@ -203,9 +203,9 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	ki_d = 0.1;
 	kd_d = 0.5;
 
-	//if (_speed < 20)//at the begining (initial)
-	//	D_err = -atan2(_Leader_X, _Leader_Y);
-	//else
+	if (_speed < 20)//at the begining (initial)
+		D_err = -atan2(_Leader_X, _Leader_Y);
+	else
 		D_err = 2 * (_yaw - 3 * atan2(_Leader_X, _Leader_Y));
 	//D_err = 2 * (_yaw - 3 * atan2(_Leader_X, _Leader_Y));
 
