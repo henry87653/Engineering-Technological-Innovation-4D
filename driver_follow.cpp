@@ -4,10 +4,9 @@
 
 	file : driver_cruise.cpp
 	description :test error function
-	version: 1.0.9
+	version: 1.1.3
 
-	Based on Huang's code. Modified by Lu at 19:29 April 2 2019.
-modified by Lu at  March/31/2019 14:29
+	modified by Lu at  April/7/2019 14:29
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
 
  ***************************************************************************/
@@ -109,10 +108,11 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	S_err = _speed - leaderSpeed;
 	D_errDiff = (D_err - LastTimeDerr) / 0.02;
 	LastTimeDerr = D_err;
-	
+
 	double offset = 0;
 	double threshold = 5;
 	//ExpectedDistance
+	//ldx: modify offset
 	if (_speed < 50)
 	{
 		offset = 0;
@@ -134,11 +134,11 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		offset = threshold;
 	}
 	if (_speed < 80 && leaderAcc>30)
-		if (_speed < 80 && leaderAcc>30)
+		if (_speed < 80 && leaderAcc>30)//speed up
 		{
 			offset = 0.3;
 		}
-		else if (_speed > 150 && leaderAcc < -50)
+		else if (_speed > 150 && leaderAcc < -50)//brake
 		{
 			offset = 5.7;
 		}
@@ -204,18 +204,18 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	ki_d = 0.1;
 	kd_d = 0.5;
 
-	/*if (_speed < 20)//at the begining (initial)
+	if (_speed < 20)//at the begining (initial)
 		D_err = -atan2(_Leader_X, _Leader_Y);
 	else
-		D_err = 2 * (_yaw - 3 * atan2(_Leader_X, _Leader_Y));*/
-	D_err = 2 * (_yaw - 3 * atan2(_Leader_X, _Leader_Y));
+		D_err = 2 * (1 * _yaw - 4.5 * atan2(_Leader_X, _Leader_Y));
+	//D_err = 2 * (_yaw - 3 * atan2(_Leader_X, _Leader_Y));
 
 	D_errDiff = D_err - D_errSum;
 	D_errSum = 0.2 * D_errSum + D_err;
 
-	//*cmdSteer = 1 * constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
+	*cmdSteer = 1 * constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
 	//*cmdSteer = 0.5 * constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff) + 0.5 * (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
-	*cmdSteer = (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
+	//*cmdSteer = (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
 
 	/* you can modify the print code here to show what you want */
 	//printf(" follow %.3f leader%.3f   XY(%.3f, %.3f)\n", _speed, leaderSpeed, _Leader_X, _Leader_Y);
