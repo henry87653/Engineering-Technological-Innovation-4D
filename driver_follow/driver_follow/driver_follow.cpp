@@ -4,9 +4,9 @@
 
 	file : driver_cruise.cpp
 	description :test error function
-	version: 1.1.3
+	version: 1.1.8
 
-	modified by Lu at  April/7/2019 14:29
+	modified by Lu at  April/10/2019 19:28
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
 
  ***************************************************************************/
@@ -61,10 +61,13 @@ float leaderSpeed;
 float lastDistance;
 float lastLeaderSpeed;
 float D_err = 0;
+float Dr_err = 0;
 float S_err = 0;
 float D_errSum = 0;
+float Dr_errSum = 0;
 float S_errSum = 0;
 float D_errDiff = 0;
+float Dr_errDiff = 0;
 float S_errDiff = 0;
 float LastTimeDerr = 0;
 float kp_s;	//kp for speed							     //
@@ -133,16 +136,42 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	{
 		offset = threshold;
 	}
-	if (_speed < 80 && leaderAcc>30)
-		if (_speed < 80 && leaderAcc>30)//speed up
-		{
-			offset = 0.3;
-		}
-		else if (_speed > 150 && leaderAcc < -50)//brake
-		{
-			offset = 5.7;
-		}
-	expectedDistance = 10 + offset;
+
+	if (_speed < 80 && leaderAcc>30)//speed up
+	{
+		printf("\t\t\tACCELERATE!\t\t\t");
+		offset = 0.3;
+	}
+
+	//ldx: -40?
+	/*if (leaderAcc < -50)//brake
+	{
+		printf("\t\t\tBRAKE!\t\t\t");
+		if		(_speed > 150)	offset = 5.7;
+		else if (_speed > 130)	offset = 5.3;
+		else if (_speed > 110)	offset = 4.8;
+		else if (_speed > 90)	offset = 4.4;
+		else if (_speed > 70)	offset = 4.0;
+		else if (_speed > 50)	offset = 3.7;
+		else if (_speed > 30)	offset = 3.2;
+		else if (_speed > 20)	offset = 2.9;
+		else if (_speed > 10)	offset = 2.6;
+		else					offset = 2.3;
+	}*/
+
+	//modify to a function?
+	
+	if (leaderAcc < -35)//brake
+	{
+		printf("\t\t\tBRAKE!\t\t\t");
+		offset = -0.1 * leaderAcc + 1/(_Leader_Y - 9.899);
+	}
+	
+	
+	//if (fabs(Dr_err) > 0.35) *cmdBrake = 1;
+	
+	//
+	expectedDistance = 10.6 + offset;
 
 
 
@@ -151,69 +180,70 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	{
 		*cmdAcc = 0;
 		*cmdBrake = 1;
-		//printf(" 1");
+		printf(" 1");
 	}
 	else if (distance < expectedDistance && S_err < 2 * (D_err + kAcc * leaderAcc))
 	{
 		*cmdAcc = 0;
 		*cmdBrake = 0.2;
-		//printf(" 2");
+		printf(" 2");
 
 	}
 	else if (distance < expectedDistance && S_err>2 * (D_err + kAcc * leaderAcc))
 	{
 		*cmdAcc = 0;
 		*cmdBrake = S_err / 5;
-		//printf(" 3");
+		printf(" 3");
 
 	}
 	else if (distance > expectedDistance && S_err < 1 * (D_err + kAcc * leaderAcc))
 	{
 		*cmdAcc = 1;
 		*cmdBrake = 0;
-		//printf(" 4");
+		printf(" 4");
 
 	}
 	else if (distance > expectedDistance && S_err > 1 * (D_err + kAcc * leaderAcc))
 	{
 		*cmdAcc = 0;
 		*cmdBrake = S_err / 5;
-		//printf(" 5");
+		printf(" 5");
 
 	}
 	if (leaderAcc < -50 && distance < expectedDistance + 0.1)
 	{
 		*cmdBrake = 1;
-		//printf(" 6");
+		printf(" 6");
 	}
 	if (fabs(*cmdSteer) > 0.2 && _speed > 150)
 	{
 		*cmdBrake = S_err / 4.79;
 		*cmdAcc = -1 * S_err;
-		//printf(" 7");
+		printf(" 7");
 
 	}
 	updateGear(cmdGear);
 	if (_speed < 10)
 	{
 		*cmdGear = 1;
-		//printf(" 8");
+		printf(" 8");
 	}
 
 	kp_d = 1;
 	ki_d = 0.1;
-	kd_d = 0.5;
+	kd_d = 1;
 
 	if (_speed < 20)//at the begining (initial)
-		D_err = -atan2(_Leader_X, _Leader_Y);
+		Dr_err = -atan2(_Leader_X, _Leader_Y);
 	else
-		D_err = 2 * (_yaw - 3 * atan2(_Leader_X, _Leader_Y));
+		Dr_err = 2 * (1 * _yaw - 7 * atan2(_Leader_X, _Leader_Y));
 	//D_err = 2 * (_yaw - 3 * atan2(_Leader_X, _Leader_Y));
 
-	D_errDiff = D_err - D_errSum;
-	D_errSum = 0.2 * D_errSum + D_err;
+	Dr_errDiff = Dr_err - Dr_errSum;
+	Dr_errSum = 0.2 * Dr_errSum + Dr_err;
 
-	*cmdSteer = 1 * constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
+	*cmdSteer = 1 * constrain(-1.0, 1.0, kp_d * Dr_err + ki_d * Dr_errSum + kd_d * Dr_errDiff);
+
 	//*cmdSteer = 0.5 * constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff) + 0.5 * (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
 	//*cmdSteer = (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
 
@@ -227,10 +257,16 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//printf("curError:%.2f\t", curError);
 	//printf("totalError:%.2f\t", totalError);
 	//printf("_Leader_X:%.2f\n", _Leader_X);
-	//printf("_Leader_Y:%.2f\n", _Leader_Y);
-	//printf("total_T:%.2f\n", total_T);
-	printf("leaderAcc:%.0f\n", leaderAcc);
+	//printf("threshold%f\t", threshold);
+	//printf("speed:%f\t", _speed);
+	printf("_Leader_Y:%.2f\t", _Leader_Y);
+	////printf("total_T:%.2f\n", total_T);
+	//printf("Direction_error:%f\t", Dr_err);
+	printf("offset:%f\t\t\t", offset);
+	printf("leaderAcc:%.0f\t\t\t", leaderAcc);
 	printf("leaderSpeed:%.0f\n", leaderSpeed);
+	printf("cmdAcc:%f\t\t", *cmdAcc);
+	printf("brake:%f\n",*cmdBrake);
 }
 
 
