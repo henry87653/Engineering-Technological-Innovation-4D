@@ -60,6 +60,10 @@ float kAcc = 0.5;
 float leaderSpeed;
 float lastDistance;
 float lastLeaderSpeed;
+float lastLeaderAcc = 0;
+float last2LeaderAcc = 0;
+float last3LeaderAcc = 0;
+float avg4LeaderAcc = 0;
 float D_err = 0;
 float Dr_err = 0;
 float S_err = 0;
@@ -105,9 +109,16 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	distance = pow((_Leader_X*_Leader_X + _Leader_Y * _Leader_Y), 0.5);
 	leaderSpeed = _speed + (distance - lastDistance) * 180;
 	lastDistance = distance;
+
+	avg4LeaderAcc = (leaderAcc + lastLeaderAcc + last2LeaderAcc + last3LeaderAcc) / 4;
 	leaderAcc = (leaderSpeed - lastLeaderSpeed) / 0.02;
 	lastLeaderSpeed = leaderSpeed;
+	last3LeaderAcc = last2LeaderAcc;
+	last2LeaderAcc = lastLeaderAcc;
+	lastLeaderAcc = leaderAcc;
+	
 	D_err = distance - expectedDistance;
+	
 	S_err = _speed - leaderSpeed;
 	D_errDiff = (D_err - LastTimeDerr) / 0.02;
 	LastTimeDerr = D_err;
@@ -145,7 +156,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		{
 			offset = 5.7;
 		}
-	
+
 	//if (fabs(Dr_err) > 0.35) *cmdBrake = 1;
 
 	expectedDistance = 10 + offset;
@@ -234,12 +245,14 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//printf("curError:%.2f\t", curError);
 	//printf("totalError:%.2f\t", totalError);
 	//printf("_Leader_X:%.2f\n", _Leader_X);
-	printf("threshold%f\t", threshold);
-	printf("speed:%f\t", _speed);
-	printf("_Leader_Y:%.2f\t", _Leader_Y);
+	//printf("threshold%f\t", threshold);
+	printf("LeaderAcc:%.2f\t", leaderAcc);
+	printf("avg4LeaderAcc:%.2f\t", avg4LeaderAcc);
+	printf("speed:%.2f\t", _speed);
+	printf("_Leader_Y:%.2f\n", _Leader_Y);
 	//printf("total_T:%.2f\n", total_T);
-	printf("Direction_error:%f\t", Dr_err);
-	printf("offset:%f\n", offset);
+	//printf("Direction_error:%f\t", Dr_err);
+	//printf("offset:%f\n", offset);
 }
 
 
