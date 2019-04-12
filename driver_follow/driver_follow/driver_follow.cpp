@@ -4,9 +4,9 @@
 
 	file : driver_cruise.cpp
 	description :test error function
-	version: 1.1.8
+	version: 1.1.10
 
-	modified by Lu at  April/10/2019 19:28
+	modified by Lu at  April/12/2019 11:07
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
 
  ***************************************************************************/
@@ -60,8 +60,8 @@ float kAcc = 0.5;
 float leaderSpeed;
 float lastDistance;
 float lastLeaderSpeed;
-float D_err = 0;
-float Dr_err = 0;
+float D_err = 0;//Distance error
+float Dr_err = 0;//Direction error
 float S_err = 0;
 float D_errSum = 0;
 float Dr_errSum = 0;
@@ -81,7 +81,6 @@ double curError;
 double totalError = 0;
 
 double total_T = 0;
-
 
 void updateGear(int *cmdGear);
 double constrain(double lowerBoundary, double upperBoundary, double input);
@@ -259,14 +258,16 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//printf("_Leader_X:%.2f\n", _Leader_X);
 	//printf("threshold%f\t", threshold);
 	//printf("speed:%f\t", _speed);
-	printf("_Leader_Y:%.2f\t", _Leader_Y);
-	////printf("total_T:%.2f\n", total_T);
+	//printf("_Leader_Y:%.2f\t", _Leader_Y);
+	//printf("total_T:%.2f\n", total_T);
 	//printf("Direction_error:%f\t", Dr_err);
-	printf("offset:%f\t\t\t", offset);
-	printf("leaderAcc:%.0f\t\t\t", leaderAcc);
-	printf("leaderSpeed:%.0f\n", leaderSpeed);
-	printf("cmdAcc:%f\t\t", *cmdAcc);
-	printf("brake:%f\n",*cmdBrake);
+	//printf("offset:%f\t\t\t", offset);
+	//printf("leaderAcc:%.0f\t\t\t", leaderAcc);
+	//printf("leaderSpeed:%.0f\n", leaderSpeed);
+	//printf("cmdAcc:%f\t\t", *cmdAcc);
+	//printf("brake:%f\n",*cmdBrake);
+	printf("Dr_err:%f\t\t", Dr_err);
+	printf("yaw:%f\n",_yaw);
 }
 
 
