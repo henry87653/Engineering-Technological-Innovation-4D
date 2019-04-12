@@ -256,7 +256,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 
 	if (_midline[0][0] < -7) {
-		*cmdSteer += 1.0; printf("002");
+		*cmdSteer=constrain(-1.0, 1.0,*cmdSteer +0.1) ; printf("002");
 	}
 
 	//*cmdSteer = 0.5 * constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff) + 0.5 * (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
