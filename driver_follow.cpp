@@ -140,18 +140,21 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	}
 
 	//the leader-acc modify
-	offset -= leaderAcc / 20;
+	offset -= leaderAcc /25;
 
-	expectedDistance = 10.2+ offset;
+	if (leaderAcc < -30)offset += 0.5;
 
-	if (expectedDistance < 9.3)expectedDistance = 9.3;
+	
+	expectedDistance = 10.3+ offset;
+
+
+	if (expectedDistance < 9.8)expectedDistance = 9.8;
 
 	if (distance < expectedDistance - 0.5 && S_err>0)
 	{
 		*cmdAcc = 0;
 		*cmdBrake = 1;
 		printf(" 1");
-		
 
 	}
 	else if (distance < expectedDistance && S_err < 2 * (D_err + kAcc * leaderAcc))
@@ -164,7 +167,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	else if (distance < expectedDistance && S_err>2 * (D_err + kAcc * leaderAcc))
 	{
 		*cmdAcc = 0;
-		*cmdBrake = S_err / 5;
+		*cmdBrake = S_err / 4;
 		printf(" 3");
 
 	}
@@ -197,15 +200,17 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		*cmdBrake = S_err / 4.79;
 		*cmdAcc = -1 * S_err;
 		printf(" 7");
-
 	}
 
-	updateGear(cmdGear);
-	if (_speed < 10)
+	if (total_T>500&&leaderSpeed < 10)
 	{
-		*cmdGear = 1;
+		*cmdBrake = 0.8;
 		printf(" 8");
 	}
+
+
+	updateGear(cmdGear);
+
 
 	/*if (leaderAcc < -50 && distance < expectedDistance + 0.1)
 	{
@@ -228,19 +233,24 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	if (_speed < 20)//at the begining (initial)
 		d_err = -atan2(_Leader_X, _Leader_Y);
 	else
-		d_err = 2 * (1 * _yaw - 4.5 * atan2(_Leader_X, _Leader_Y));
+		d_err = 2 * (1 * _yaw - 6 * atan2(_Leader_X, _Leader_Y));
+
 	//D_err = 2 * (_yaw - 3 * atan2(_Leader_X, _Leader_Y));
 
 	d_errDiff = d_err - d_errSum;
 	d_errSum = 0.2 * d_errSum + d_err;
 	*cmdSteer = 1 * constrain(-1.0, 1.0, kp_d * d_err + ki_d * d_errSum + kd_d * d_errDiff);
 
+	
+	if (_midline[0][0] < -7) {
+		*cmdSteer +=1.0; printf("002");
+	}
 
 	//*cmdSteer = 0.5 * constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff) + 0.5 * (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
 	//*cmdSteer = (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
 
 	/* you can modify the print code here to show what you want */
-	printf(" follow %.3f leader%.3f   XY(%.3f, %.3f)  expected%.3f \n", _speed, leaderSpeed, _Leader_X, _Leader_Y,expectedDistance);
+	printf(" follow %.3f leader%.3f   XY(%.3f, %.3f)  expected%.3f steer%.2f\n", _speed, leaderSpeed, _Leader_X, _Leader_Y,expectedDistance,*cmdSteer);
 
 	//ldx:error
 	curError = sqrt(25 * (_Leader_X * _Leader_X) + (_Leader_Y * _Leader_Y));
@@ -250,7 +260,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//printf("totalError:%.2f\t", totalError);
 	//printf("_Leader_X:%.2f\n", _Leader_X);
 	//printf("_Leader_Y:%.2f\n", _Leader_Y);
-	//printf("total_T:%.2f\n", total_T);
+	printf("total_T:%.2f\n", total_T);
 }
 
 
