@@ -2,11 +2,11 @@
 	Copyright (C) 2019
 	All rights reserved
 
-	file : driver_cruise.cpp
+	file : driver_follow.cpp
 	description :test error function
-	version: 1.2.4
+	version: 1.3.2
 
-	modified by YC
+	modified by Y at  April/16/2019 19:48
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
 
  ***************************************************************************/
@@ -60,35 +60,51 @@ float kAcc = 0.5;
 float leaderSpeed;
 float lastDistance;
 float lastLeaderSpeed;
-float lastLeaderAcc = 0;
-float last2LeaderAcc = 0;
-float last3LeaderAcc = 0;
-float avg4LeaderAcc = 0;
-float D_err = 0;//distance error
-float d_err = 0;//direction error
+float D_err = 0;//Distance error
+float Dr_err = 0;//Direction error
 float S_err = 0;
 float D_errSum = 0;
-float d_errSum = 0;
+float Dr_errSum = 0;
 float S_errSum = 0;
 float D_errDiff = 0;
-float d_errDiff = 0;
+float Dr_errDiff = 0;
 float S_errDiff = 0;
 float LastTimeDerr = 0;
+
+double offset = 0;
+double threshold = 5;
+
+///pid for speed direction distance
 float kp_s;	//kp for speed							     //
 float ki_s;	//ki for speed							     //
 float kd_s;	//kd for speed							     //
-float kp_d;	//kp for direction						     //
-float ki_d;	//ki for direction					    	 //
-float kd_d;	//kd for direction						     //
+float kp_dr;//kp for direction							 //
+float ki_dr;//ki for direction							 //
+float kd_dr;//kd for direction							 //
+float kp_d;	//kp for distance 					     	 //
+float ki_d;	//ki for distance 						     //
+float kd_d;	//kd for distance 					         //
+
+//float kp_x;	//kp for x      						     //
+//float ki_x;	//ki for x      						     //
+//float kd_x;	//kd for x      						     //
+//float kp_y;	//kp for y      						     //
+//float ki_y;	//ki for y      						     //
+//float kd_y;	//kd for y      						     //
+
+//-----------------------------------------
+float cmdSpeed;
+
+//--------------------------------------------
 
 double curError;
 double totalError = 0;
 
 double total_T = 0;
 
-
 void updateGear(int *cmdGear);
 double constrain(double lowerBoundary, double upperBoundary, double input);
+//==========================get paratemeters from computer==========================
 static void userDriverGetParam(float LeaderXY[2], float midline[200][2], float yaw, float yawrate, float speed, float acc, float width, int gearbox, float rpm) {
 	/* write your own code here */
 	_Leader_X = LeaderXY[0];
@@ -106,32 +122,18 @@ static void userDriverGetParam(float LeaderXY[2], float midline[200][2], float y
 }
 static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, int* cmdGear) {
 	/* write your own code here */
-	distance = pow((_Leader_X*_Leader_X + _Leader_Y * _Leader_Y), 0.5);
+	distance = pow((_Leader_X*_Leader_X + _Leader_Y * _Leader_Y), 0.5);//
 	leaderSpeed = _speed + (distance - lastDistance) * 180;
 	lastDistance = distance;
-
-	avg4LeaderAcc = (leaderAcc + lastLeaderAcc + last2LeaderAcc + last3LeaderAcc) / 4;
-	leaderAcc = (leaderSpeed - lastLeaderSpeed) / 0.02 * cos(d_err);
-	lastLeaderSpeed = leaderSpeed;
-	last3LeaderAcc = last2LeaderAcc;
-	last2LeaderAcc = lastLeaderAcc;
-	lastLeaderAcc = leaderAcc;
-
-	//if (fabs(leaderAcc) < 60) { leaderAcc = avg4LeaderAcc; }
-
+	leaderAcc = (leaderSpeed - lastLeaderSpeed) / 0.02;
 	lastLeaderSpeed = leaderSpeed;
 	D_err = distance - expectedDistance;
 	S_err = _speed - leaderSpeed;
-	D_errDiff = (D_err - LastTimeDerr) / 0.02;
-	LastTimeDerr = D_err;
+	
 
-	double offset = 0;
-	double threshold = 5;
 	//ExpectedDistance
-	//ldx: modify offset
-
-	//the leader-speed control
-	if (_speed < 50)
+	//Liu's expectedDistance function
+	/*if (_speed < 50)
 	{
 		offset = 0;
 	}
@@ -152,23 +154,44 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		offset = threshold;
 	}
 
-	//the leader-acc modify
-	offset -= leaderAcc / 25;
+	if (_speed < 80 && leaderAcc>30)//speed up
+	{
+		printf("\t\t\tACCELERATE!\t\t\t");
+		offset = 0.3;
+	}
 
-	if (leaderAcc < -30)offset += 0.5;
+	//if (leaderAcc < -35)//brake
+	//{
+	//	printf("\t\t\tBRAKE!\t\t\t");
+	//	offset = -0.1 * leaderAcc + 1/(_Leader_Y - 9.899);
+	//}
 
 
-	expectedDistance = 10.3 + offset;
+	//if (fabs(Dr_err) > 0.35) *cmdBrake = 1;
 
+	//
+	expectedDistance = 10.6 + offset;
+	*/
+	kp_d = 1;
+	ki_d = 0;
+	kd_d = 0;
+	expectedDistance = 11;
 
-	if (expectedDistance < 9.8)expectedDistance = 9.8;
+	D_err = distance - expectedDistance;
+	D_errDiff = (D_err - LastTimeDerr) / 0.02;
+	LastTimeDerr = D_err;
+	D_errSum = 0.2 * D_errSum + D_err;
 
-	if (distance < expectedDistance - 0.5 && S_err>0)
+	cmdSpeed = constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
+	if (cmdSpeed > 0) { *cmdAcc = cmdSpeed; updateGear(cmdGear); }
+	else *cmdBrake = - cmdSpeed;
+
+	//expectedDistance -----> *cmdAcc & *cmdBrake
+	/*if (distance < expectedDistance - 0.5 && S_err>0)
 	{
 		*cmdAcc = 0;
 		*cmdBrake = 1;
 		printf(" 1");
-
 	}
 	else if (distance < expectedDistance && S_err < 2 * (D_err + kAcc * leaderAcc))
 	{
@@ -180,7 +203,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	else if (distance < expectedDistance && S_err>2 * (D_err + kAcc * leaderAcc))
 	{
 		*cmdAcc = 0;
-		*cmdBrake = S_err / 4;
+		*cmdBrake = S_err / 5;
 		printf(" 3");
 
 	}
@@ -189,11 +212,6 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		*cmdAcc = 1;
 		*cmdBrake = 0;
 		printf(" 4");
-		if (leaderSpeed > 20 && _Leader_Y < 10.3)
-		{
-			*cmdAcc = 0.3;
-			*cmdBrake = 0.6;
-		}
 
 	}
 	else if (distance > expectedDistance && S_err > 1 * (D_err + kAcc * leaderAcc))
@@ -213,71 +231,62 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		*cmdBrake = S_err / 4.79;
 		*cmdAcc = -1 * S_err;
 		printf(" 7");
-	}
 
-	if (total_T > 500 && leaderSpeed < 10)
+	}
+	updateGear(cmdGear);
+	if (_speed < 10)
 	{
-		*cmdBrake = 0.8;
+		*cmdGear = 1;
 		printf(" 8");
 	}
-
-
-	updateGear(cmdGear);
-
-
-	/*if (leaderAcc < -50 && distance < expectedDistance + 0.1)
-	{
-		*cmdBrake = 1;
-		printf(" 6");
-	}
-	if (fabs(*cmdSteer) > 0.2 && _speed > 150)
-	{
-		*cmdBrake = S_err / 4.79;
-		*cmdAcc = -1 * S_err;
-		printf(" 7");
-
-	}*/
-
-
-	kp_d = 1;
-	ki_d = 0.1;
-	kd_d = 0.9;
+	*/
+	kp_dr = 1;
+	ki_dr = 0.1;
+	kd_dr = 1;
 
 	if (_speed < 20)//at the begining (initial)
-		d_err = -atan2(_Leader_X, _Leader_Y);
+		Dr_err = -atan2(_Leader_X, _Leader_Y);
 	else
-		d_err = 2 * (1 * _yaw - 6 * atan2(_Leader_X, _Leader_Y));
-
+		Dr_err = 2 * (1 * _yaw - 7 * atan2(_Leader_X, _Leader_Y));
 	//D_err = 2 * (_yaw - 3 * atan2(_Leader_X, _Leader_Y));
 
-	d_errDiff = d_err - d_errSum;
-	d_errSum = 0.2 * d_errSum + d_err;
-	*cmdSteer = 1 * constrain(-1.0, 1.0, kp_d * d_err + ki_d * d_errSum + kd_d * d_errDiff);
+	Dr_errDiff = Dr_err - Dr_errSum;
+	Dr_errSum = 0.2 * Dr_errSum + Dr_err;
 
-
-	if (_midline[0][0] < -7) {
-		*cmdSteer = constrain(-1.0, 1.0, *cmdSteer + 0.1); printf("002");
-	}
+	*cmdSteer = 1 * constrain(-1.0, 1.0, kp_dr * Dr_err + ki_dr * Dr_errSum + kd_dr * Dr_errDiff);
 
 	//*cmdSteer = 0.5 * constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff) + 0.5 * (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
 	//*cmdSteer = (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
 
 	/* you can modify the print code here to show what you want */
-	printf(" follow %.3f leader%.3f   XY(%.3f, %.3f)  expected%.3f steer%.2f\n", _speed, leaderSpeed, _Leader_X, _Leader_Y, expectedDistance, *cmdSteer);
+	//printf(" follow %.3f leader%.3f   XY(%.3f, %.3f)\n", _speed, leaderSpeed, _Leader_X, _Leader_Y);
 
-	//ldx:error
+	///============================ldx: defined error============================
 	curError = sqrt(25 * (_Leader_X * _Leader_X) + (_Leader_Y * _Leader_Y));
 	totalError += curError;
 	total_T += 1;
+	///============================ldx: defined error============================
+
+	///============================printf functions to monitor varieslbes============================
 	//printf("curError:%.2f\t", curError);
 	//printf("totalError:%.2f\t", totalError);
 	//printf("_Leader_X:%.2f\n", _Leader_X);
-	//printf("_Leader_Y:%.2f\n", _Leader_Y);
-	printf("total_T:%.2f\n", total_T);
+	//printf("threshold%f\t", threshold);
+	//printf("speed:%f\t", _speed);
+	//printf("_Leader_Y:%.2f\t", _Leader_Y);
+	//printf("total_T:%.2f\n", total_T);
+	//printf("Direction_error:%f\t", Dr_err);
+	//printf("offset:%f\t\t\t", offset);
+	//printf("leaderAcc:%.0f\t\t\t", leaderAcc);
+	//printf("leaderSpeed:%.0f\n", leaderSpeed);
+	//printf("cmdAcc:%f\t\t", *cmdAcc);
+	//printf("brake:%f\n",*cmdBrake);
+	//printf("Dr_err:%f\t\t", Dr_err);
+	//printf("yaw:%f\n",_yaw);
 }
 
 
-
+///=================helping functions from TA no need to modify============================
 void updateGear(int *cmdGear)
 {
 	if (_gearbox == 1)
@@ -376,3 +385,4 @@ double constrain(double lowerBoundary, double upperBoundary, double input)
 	else
 		return input;
 }
+///=================helping functions from TA no need to modify============================
