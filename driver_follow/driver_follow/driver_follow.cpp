@@ -3,8 +3,13 @@
 	All rights reserved
 
 	file : driver_follow.cpp
-	description :重构代码，放弃Liu学长的模型，已经将他的注释掉，并且对原来的程序进行了功能描述（分块）
-	version: 1.3.0
+	description :direction + 原来的distance；后面请改动急刹
+					卢栋希：direction speed（driver_cruise经验）;;;黄菲菲：direction y;;;陈宇超：direction speed（自己写）
+					Dr_errDiff可能要改//这里错了
+					Dr_errDiff = Dr_err - LastTimeDr_err;
+					LastTimeDr_err = Dr_err;
+					改进方向：不止使用speed 加上 distance
+	version: 1.3.1
 
 	modified by Lu at  April/16/2019 18:18
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
@@ -70,6 +75,8 @@ float D_errDiff = 0;
 float Dr_errDiff = 0;
 float S_errDiff = 0;
 float LastTimeDerr = 0;
+float LastTimeSerr = 0;
+float LastTimeDr_err = 0;
 
 double offset = 0;
 double threshold = 5;
@@ -78,13 +85,14 @@ double threshold = 5;
 float kp_s;	//kp for speed							     //
 float ki_s;	//ki for speed							     //
 float kd_s;	//kd for speed							     //
+
 float kp_dr;//kp for direction							 //
 float ki_dr;//ki for direction							 //
 float kd_dr;//kd for direction							 //
 float kp_d;	//kp for distance 					     	 //
 float ki_d;	//ki for distance 						     //
 float kd_d;	//kd for distance 					         //
-
+///==============================X  Y==============================
 //float kp_x;	//kp for x      						     //
 //float ki_x;	//ki for x      						     //
 //float kd_x;	//kd for x      						     //
@@ -123,14 +131,14 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	lastDistance = distance;
 	leaderAcc = (leaderSpeed - lastLeaderSpeed) / 0.02;
 	lastLeaderSpeed = leaderSpeed;
-	D_err = distance - expectedDistance;
+	//D_err = distance - expectedDistance;
 	S_err = _speed - leaderSpeed;
-	D_errDiff = (D_err - LastTimeDerr) / 0.02;
+	//D_errDiff = (D_err - LastTimeDerr) / 0.02;
 	LastTimeDerr = D_err;
 
 	//ExpectedDistance
 	//Liu's expectedDistance function
-	/*if (_speed < 50)
+	if (_speed < 50)
 	{
 		offset = 0;
 	}
@@ -168,10 +176,107 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	
 	//
 	expectedDistance = 10.6 + offset;
-	*/
+	
 
 
-	//expectedDistance -----> *cmdAcc & *cmdBrake
+	//============================卢栋希的expectedDistance -----> *cmdAcc & *cmdBrake============================
+	//重新定义了D_err D_errSum D_errDiff
+	D_err = distance - expectedDistance;
+	//D_err = (expectedDistance - distance) / 0.02;
+	D_errSum = 0.5 * D_errSum + D_err;
+	D_errDiff = D_err - LastTimeSerr;
+	LastTimeDerr = D_err;
+
+	kp_d = 10;
+	ki_d = 0;
+	kd_d = 0;
+
+	if (total_T < 200) {//initial 起步用Liu's code
+		if (distance < expectedDistance - 0.5 && S_err>0)
+		{
+			*cmdAcc = 0;
+			*cmdBrake = 1;
+			printf(" 1");
+		}
+		else if (distance < expectedDistance && S_err < 2 * (D_err + kAcc * leaderAcc))
+		{
+			*cmdAcc = 0;
+			*cmdBrake = 0.2;
+			printf(" 2");
+
+		}
+		else if (distance < expectedDistance && S_err>2 * (D_err + kAcc * leaderAcc))
+		{
+			*cmdAcc = 0;
+			*cmdBrake = S_err / 5;
+			printf(" 3");
+
+		}
+		else if (distance > expectedDistance && S_err < 1 * (D_err + kAcc * leaderAcc))
+		{
+			*cmdAcc = 1;
+			*cmdBrake = 0;
+			printf(" 4");
+
+		}
+		else if (distance > expectedDistance && S_err > 1 * (D_err + kAcc * leaderAcc))
+		{
+			*cmdAcc = 0;
+			*cmdBrake = S_err / 5;
+			printf(" 5");
+
+		}
+		if (leaderAcc < -50 && distance < expectedDistance + 0.1)
+		{
+			*cmdBrake = 1;
+			printf(" 6");
+		}
+		if (fabs(*cmdSteer) > 0.2 && _speed > 150)
+		{
+			*cmdBrake = S_err / 4.79;
+			*cmdAcc = -1 * S_err;
+			printf(" 7");
+
+		}
+		updateGear(cmdGear);
+		if (_speed < 10)
+		{
+			*cmdGear = 1;
+			printf(" 8");
+		}
+	}
+	else {//起步之后用卢栋希的from driver_cruise
+		if (D_err > 0)			//distance too small
+		{
+			if (abs(*cmdSteer) < 0.6)//-1.0 <= *cmdSteer <=  1.0; when *cmdSteer is small
+			{
+				//printf("*cmdSteer small\t");
+				*cmdAcc = constrain(0.0, 1.0, kp_d * D_err + ki_d * D_errSum + offset);
+				*cmdBrake = 0;
+			}
+			else if (abs(*cmdSteer) > 0.70)//when *cmdSteer is large
+			{
+				//printf("*cmdSteer large\t");
+				*cmdAcc = 0.005 + offset;
+				*cmdBrake = 0;
+			}
+			else//when *cmdSteer is in the middle ( 0.6 to 0.7 )
+			{
+				//printf("*cmdSteer middle\t");
+				*cmdAcc = 0.11 + offset;
+				*cmdBrake = 0;
+			}
+		}
+		else if (D_err < 0)		//distance too big
+		{
+			*cmdBrake = constrain(0.0, 0.8, -kp_d * D_err / 5 - offset / 3);
+			*cmdAcc = 0;
+		}
+		updateGear(cmdGear);
+	}
+	//============================卢栋希的expectedDistance -----> *cmdAcc & *cmdBrake============================
+
+	//下============================Liu的expectedDistance -----> *cmdAcc & *cmdBrake============================
 	/*if (distance < expectedDistance - 0.5 && S_err>0)
 	{
 		*cmdAcc = 0;
@@ -237,7 +342,11 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		Dr_err = 2 * (1 * _yaw - 7 * atan2(_Leader_X, _Leader_Y));
 	//D_err = 2 * (_yaw - 3 * atan2(_Leader_X, _Leader_Y));
 
-	Dr_errDiff = Dr_err - Dr_errSum;
+	//Dr_errDiff可能要改//这里错了吗？？？？？？？？？//这里错了吗？？？？？？？？？//这里错了吗？？？？？？？？？//这里错了吗？？？？？？？？？//这里错了吗？？？？？？？？？
+	Dr_errDiff = Dr_err - Dr_errSum;//这里错了吗？？？？？？？？？
+	/*Dr_errDiff = Dr_err - LastTimeDr_err;
+	LastTimeDr_err = Dr_err;
+	*/
 	Dr_errSum = 0.2 * Dr_errSum + Dr_err;
 
 	*cmdSteer = 1 * constrain(-1.0, 1.0, kp_dr * Dr_err + ki_dr * Dr_errSum + kd_dr * Dr_errDiff);
@@ -248,6 +357,43 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	/* you can modify the print code here to show what you want */
 	//printf(" follow %.3f leader%.3f   XY(%.3f, %.3f)\n", _speed, leaderSpeed, _Leader_X, _Leader_Y);
 	///================================PID for Direction Error ----> cmdSteer================================
+
+	///================================PID for Speed Error ----> cmdAcc cmdBrake================================
+	/*S_errSum = 1 * S_errSum + S_err;
+	S_errDiff = S_err - LastTimeSerr;
+	LastTimeSerr = S_err;
+	
+	kp_s = 1;
+	ki_s = 0;
+	kd_s = 0;
+
+	if (S_err > 0)			//lackspeed
+		{
+			if (abs(*cmdSteer) < 0.6)//-1.0 <= *cmdSteer <=  1.0; when *cmdSteer is small
+			{
+				//printf("*cmdSteer small\t");
+				*cmdAcc = constrain(0.0, 1.0, kp_s * S_err + ki_s * S_errSum + offset);
+				*cmdBrake = 0;
+			}
+			else if (abs(*cmdSteer) > 0.70)//when *cmdSteer is large
+			{
+				//printf("*cmdSteer large\t");
+				*cmdAcc = 0.005 + offset;
+				*cmdBrake = 0;
+			}
+			else//when *cmdSteer is in the middle ( 0.6 to 0.7 )
+			{
+				//printf("*cmdSteer middle\t");
+				*cmdAcc = 0.11 + offset;
+				*cmdBrake = 0;
+			}
+	}
+	else if (S_err < 0)		//overspeed
+	{
+		*cmdBrake = constrain(0.0, 0.8, -kp_s * S_err / 5 - offset / 3);
+		*cmdAcc = 0;
+	}*/
+	///================================PID for Speed Error ----> cmdAcc cmdBrake================================
 
 	///============================ldx: defined error============================
 	curError = sqrt(25 * (_Leader_X * _Leader_X) + (_Leader_Y * _Leader_Y));
@@ -268,6 +414,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//printf("leaderAcc:%.0f\t\t\t", leaderAcc);
 	//printf("leaderSpeed:%.0f\n", leaderSpeed);
 	//printf("cmdAcc:%f\t\t", *cmdAcc);
+	printf("cmdSteer:%f\t\n", *cmdSteer);
 	//printf("brake:%f\n",*cmdBrake);
 	//printf("Dr_err:%f\t\t", Dr_err);
 	//printf("yaw:%f\n",_yaw);

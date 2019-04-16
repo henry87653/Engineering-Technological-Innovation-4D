@@ -1,4 +1,5 @@
 #include "tgf.h"
+#include <cmath>
 
 #ifndef __USER2_ITF
 #define __USER2_ITF
