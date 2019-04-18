@@ -4,7 +4,7 @@
 
 	file : driver_follow.cpp
 	description :test error function
-	version: 1.34.2
+	version: 1.4.3
 
 	modified by Y at  April/18/2019 21:32
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
@@ -56,7 +56,6 @@ const int topGear = 6;
 float distance;
 float expectedDistance;
 float leaderAcc = 0;
-float maxLeaderAcc = 0;
 float kAcc = 0.5;
 float leaderSpeed;
 float lastDistance;
@@ -178,16 +177,34 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	kp_d = 5;
 	ki_d = 0;
 	kd_d = 3;
-	expectedDistance = 9.9 + offset;
+	expectedDistance = 10 + offset;
 
 	D_err = distance - expectedDistance;
 	D_errDiff = (D_err - LastTimeDerr) / 0.02 ;
 	LastTimeDerr = D_err;
 	D_errSum = 0.2 * D_errSum + D_err;
 
-	offset = 1;
-	if (fabs(leaderAcc) > fabs(maxLeaderAcc) && fabs(leaderAcc) < 300) maxLeaderAcc = leaderAcc;
+	//offset = 0.1;
+	if(leaderAcc < 0){
+		if (_speed < 130) {
+			if (-100 < leaderAcc) offset = -leaderAcc / 150;
+			else offset = 1 / 3 - leaderAcc / 100;
+		}
+		else if (_speed < 200) {
+			if (-60 < leaderAcc) offset = -leaderAcc / 100;
+			else offset = 1.8 - leaderAcc / 50;
+		}
+		else offset = 1 - leaderAcc / 50;
+	}
 
+	/*if (_speed < 130) {
+		 offset = -leaderAcc / 150;
+	}
+	else if (_speed < 200) {
+		offset = 0.5 - leaderAcc / 100;
+	}
+	else offset = 1 - leaderAcc / 50;
+	*/
 	cmdSpeed = constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
 	if (cmdSpeed > 0) { *cmdAcc = cmdSpeed; updateGear(cmdGear); }
 	else *cmdBrake = - cmdSpeed;
@@ -251,7 +268,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	kd_dr = 0.6;
 
 
-	Dr_err = 2 * (1 * _yaw - 7 * atan2(_Leader_X, _Leader_Y));
+	Dr_err = 2 * (1 * _yaw - 6 * atan2(_Leader_X, _Leader_Y));
 	//D_err = 2 * (_yaw - 7 * atan2(_Leader_X, _Leader_Y));
 
 	Dr_errDiff = Dr_err - Dr_errSum;
@@ -283,13 +300,12 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//printf("Direction_error:%f\t", Dr_err);
 	//printf("offset:%f\t\t\t", offset);
 	printf("lAcc:%.0f  ", leaderAcc);
-	printf("mLAcc:%.0f  ", maxLeaderAcc);
 	//printf("leaderSpeed:%.0f\t", leaderSpeed);
 	printf("cmdAcc:%.1f  ", *cmdAcc);
 	printf("brake:%.1f  ",*cmdBrake);
 	//printf("Dr_err:%f\t\t", Dr_err);
 	//printf("yaw:%f\n",_yaw);
-	printf("expD:%.0f\n", expectedDistance);
+	printf("expD:%.2f\n", expectedDistance);
 }
 
 
