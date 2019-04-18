@@ -3,8 +3,9 @@
 	All rights reserved
 
 	file : driver_follow.cpp
-	description :direction + 原来的distance；已改急刹，不尽如人意
-					改进方向：speed 加上 distance控制？
+	description :fullLeaderAcc, fullLeaderBrake
+			改进方向：三个周期内：速度变化较大，LeadCtrlAcc > 0.5 || <-0.5 才用
+			小速度模型不够准确
 	version: 1.3.3
 
 	modified by Lu at  April/17/2019 18:11
@@ -182,7 +183,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//if (fabs(Dr_err) > 0.35) *cmdBrake = 1;
 	
 	//
-	expectedDistance = 18 + offset;
+	expectedDistance = 9.9 + offset;// 8.9;
 	
 
 
@@ -198,7 +199,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	ki_d = 0;
 	kd_d = 0;
 
-	if (total_T < 400) {//initial 起步用Liu's code
+	if (total_T > 0) {//initial 起步用Liu's code
 		if (distance < expectedDistance - 0.5 && S_err>0)
 		{
 			*cmdAcc = 0;
@@ -252,36 +253,47 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			printf(" 8");
 		}
 	}
-	else {//起步之后用卢栋希的from driver_cruise
-		if (D_err > 0)			//distance too small
-		{
-			if (abs(*cmdSteer) <= 1)//-1.0 <= *cmdSteer <=  1.0; when *cmdSteer is small//原来是0.6
-			{
-				//printf("*cmdSteer small\t");
-				*cmdAcc = constrain(0.0, 1.0, kp_d * D_err + ki_d * D_errSum + D_offset);
-				*cmdBrake = 0;
-			}
-			else if (abs(*cmdSteer) > 0.70)//when *cmdSteer is large
-			{
-				//printf("*cmdSteer large\t");
-				*cmdAcc = 0.005 + D_offset;
-				*cmdBrake = 0;
-			}
-			else//when *cmdSteer is in the middle ( 0.6 to 0.7 )
-			{
-				//printf("*cmdSteer middle\t");
-				*cmdAcc = 0.11 + D_offset;
-				*cmdBrake = 0;
-			}
+	/*else {
+		if (leaderAcc >= 0) {
+			*cmdAcc = constrain(0, 1, 1.1 * leaderAcc / fullLeaderAcc);
+			*cmdBrake = 0;
 		}
-		else if (D_err < 0)		//distance too big
-		{
-			*cmdBrake = constrain(0.0, 1.0, -kp_d * D_err * 2 - D_offset / 3);
-			//*cmdBrake = constrain(0.0, 0.8, -kp_d * D_err / 5 - D_offset / 3);
+		else {
 			*cmdAcc = 0;
+			*cmdBrake = constrain(0, 1, leaderAcc / fullLeaderBrake);
 		}
 		updateGear(cmdGear);
-	}
+	}*/
+	//else {//起步之后用卢栋希的from driver_cruise
+	//	if (D_err > 0)			//distance too small
+	//	{
+	//		if (abs(*cmdSteer) <= 1)//-1.0 <= *cmdSteer <=  1.0; when *cmdSteer is small//原来是0.6
+	//		{
+	//			//printf("*cmdSteer small\t");
+	//			*cmdAcc = constrain(0.0, 1.0, kp_d * D_err + ki_d * D_errSum + D_offset);
+	//			*cmdBrake = 0;
+	//		}
+	//		else if (abs(*cmdSteer) > 0.70)//when *cmdSteer is large
+	//		{
+	//			//printf("*cmdSteer large\t");
+	//			*cmdAcc = 0.005 + D_offset;
+	//			*cmdBrake = 0;
+	//		}
+	//		else//when *cmdSteer is in the middle ( 0.6 to 0.7 )
+	//		{
+	//			//printf("*cmdSteer middle\t");
+	//			*cmdAcc = 0.11 + D_offset;
+	//			*cmdBrake = 0;
+	//		}
+	//	}
+	//	else if (D_err < 0)		//distance too big
+	//	{
+	//		*cmdBrake = constrain(0.0, 1.0, -kp_d * D_err * 2 - D_offset / 3);
+	//		//*cmdBrake = constrain(0.0, 0.8, -kp_d * D_err / 5 - D_offset / 3);
+	//		*cmdAcc = 0;
+	//	}
+	//	updateGear(cmdGear);
+	//}
 	//============================卢栋希的expectedDistance -----> *cmdAcc & *cmdBrake============================
 
 	//下============================Liu的expectedDistance -----> *cmdAcc & *cmdBrake============================
@@ -409,7 +421,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	total_T += 1;
 	///============================ldx: defined error============================
 
-	///============================ldx: defined fullLeaderAcc============================
+	///============================ldx: defined fullLeaderAcc; fullLeaderBrake============================
 	if (leaderSpeed < 15)			fullLeaderAcc = 31.62684	+ 0.30843 * leaderSpeed;
 	else if (leaderSpeed < 50)		fullLeaderAcc = 45.6885		- 0.03638 * leaderSpeed;
 	else if (leaderSpeed < 70)		fullLeaderAcc = 47.82208	- 0.07608 * leaderSpeed;
@@ -423,7 +435,9 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	else if (leaderSpeed < 250)		fullLeaderAcc = 29.10202	- 0.08663 * leaderSpeed;
 	else if (leaderSpeed < 254)		fullLeaderAcc = 14.09901	- 0.02562 * leaderSpeed;
 	else							fullLeaderAcc = 7.64;
-	///============================ldx: defined fullLeaderAcc============================
+
+	fullLeaderBrake = -0.0008 * leaderSpeed * leaderSpeed + 0.0439 * leaderSpeed - 62.618;
+	///============================ldx: defined fullLeaderAcc; fullLeaderBrake============================
 
 	///============================printf functions to monitor varieslbes============================
 	{
@@ -432,24 +446,28 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		//printf("_Leader_X:%.2f\n", _Leader_X);
 		//printf("threshold%f\t", threshold);
 		//printf("speed:%f\t", _speed);
-		//printf("_Leader_Y:%.2f\t", _Leader_Y);
+		printf("_Leader_Y:%.2f\t", _Leader_Y);
 		//printf("total_T:%.2f\n", total_T);
 		//printf("Direction_error:%f\t", Dr_err);
 		//printf("offset:%f\t\t", offset);
 
-		//printf("fullLeaderAcc%.2f\t\t", fullLeaderAcc);//"\t\leaderSpeed:%.0f\t", fullLeaderAcc
-		printf("%.2f\t", leaderSpeed);//"\t\leaderSpeed:%.0f\t", leaderSpeed
-		printf("%.3f\n",leaderAcc);//"\t\tleaderAcc:%.0f\t", leaderAcc
-		//printf("leaderSpeed:%.0f\n", leaderSpeed);
+		//printf("%.2f\t", leaderSpeed);
+		//printf("%.3f\n",leaderAcc);
+		printf("leaderSpeed:%.0f\t", leaderSpeed);
+		printf("leaderAcc%.1f\t", leaderAcc);
 		//printf("cmdAcc:%f\t\t", *cmdAcc);
 		//printf("cmdSteer:%f\t\t", *cmdSteer);
 		//printf("cmdBrake:%f\n", *cmdBrake);
 		//printf("Dr_err:%f\t\t", Dr_err);
 		//printf("yaw:%f\n",_yaw);
-		//printf("Acc/speed:%f\n", 2 * leaderAcc / leaderSpeed);
+		//printf("cmdGear:%d\t", *cmdGear);
+		//printf("fullLeaderBrake%.2f\t", fullLeaderBrake);//"\t\leaderSpeed:%.0f\t", fullLeaderBrake
+		//printf("fullLeaderAcc%.2f\t", fullLeaderAcc);//"\t\leaderSpeed:%.0f\t", fullLeaderAcc
+		if(leaderAcc >= 0)	printf("LeadCtrlAcc%.3f\n", leaderAcc / fullLeaderAcc);
+		else				printf("LeadCtrlBrake%.3f\n", leaderAcc / fullLeaderBrake);
 	}
+	///============================printf functions to monitor varieslbes============================
 }
-
 
 ///=================helping functions from TA no need to modify============================
 void updateGear(int *cmdGear)
