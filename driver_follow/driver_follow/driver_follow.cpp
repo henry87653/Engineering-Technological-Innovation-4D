@@ -3,10 +3,10 @@
 	All rights reserved
 
 	file : driver_follow.cpp
-	description :fullLeaderAcc, fullLeaderBrake
-			改进方向：三个周期内：速度变化较大，LeadCtrlAcc > 0.5 || <-0.5 才用
+	description :leadCtrlAcc, leadCtrlBrake
+			改进方向：两？三个周期内：速度变化较大，leadCtrlAcc > 0.5 || <-0.5 才用
 			小速度模型不够准确
-	version: 1.3.3
+	version: 1.3.4
 
 	modified by Lu at  April/17/2019 18:11
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
@@ -112,7 +112,9 @@ double totalError = 0;
 double total_T = 0;
 
 double fullLeaderAcc = 0;
-double fullLeaderBrake = 0;
+double fullLeaderBrake = 0; 
+double leadCtrlAcc = 0;		//测算头车的cmdAcc（0~1.0）
+double leadCtrlBrake = 0;	//测算头车的cmdBrake（0~1.0）
 
 void updateGear(int *cmdGear);
 double constrain(double lowerBoundary, double upperBoundary, double input);
@@ -195,6 +197,9 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	D_errDiff = D_err - LastTimeSerr;
 	LastTimeDerr = D_err;
 
+	leadCtrlAcc = leaderAcc / fullLeaderAcc;
+	leadCtrlBrake = leaderAcc / fullLeaderBrake;
+
 	kp_d = 0.3;
 	ki_d = 0;
 	kd_d = 0;
@@ -255,12 +260,12 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	}
 	/*else {
 		if (leaderAcc >= 0) {
-			*cmdAcc = constrain(0, 1, 1.1 * leaderAcc / fullLeaderAcc);
+			*cmdAcc = constrain(0, 1, leadCtrlAcc);
 			*cmdBrake = 0;
 		}
 		else {
 			*cmdAcc = 0;
-			*cmdBrake = constrain(0, 1, leaderAcc / fullLeaderBrake);
+			*cmdBrake = constrain(0, 1, leadCtrlBrake);
 		}
 		updateGear(cmdGear);
 	}*/
@@ -463,8 +468,8 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		//printf("cmdGear:%d\t", *cmdGear);
 		//printf("fullLeaderBrake%.2f\t", fullLeaderBrake);//"\t\leaderSpeed:%.0f\t", fullLeaderBrake
 		//printf("fullLeaderAcc%.2f\t", fullLeaderAcc);//"\t\leaderSpeed:%.0f\t", fullLeaderAcc
-		if(leaderAcc >= 0)	printf("LeadCtrlAcc%.3f\n", leaderAcc / fullLeaderAcc);
-		else				printf("LeadCtrlBrake%.3f\n", leaderAcc / fullLeaderBrake);
+		if(leaderAcc >= 0)	printf("leadCtrlAcc%.3f\n", leadCtrlAcc);
+		else				printf("leadCtrlBrake%.3f\n", leadCtrlBrake);
 	}
 	///============================printf functions to monitor varieslbes============================
 }
