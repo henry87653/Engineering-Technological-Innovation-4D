@@ -5,9 +5,9 @@
 	file : driver_follow.cpp
 	description :direction + 原来的distance；已改急刹，不尽如人意
 					改进方向：speed 加上 distance控制？
-	version: 1.3.2
+	version: 1.3.3
 
-	modified by Lu at  April/16/2019 18:18
+	modified by Lu at  April/17/2019 18:11
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
 
  ***************************************************************************/
@@ -97,11 +97,21 @@ float kd_d;	//kd for distance 					         //
 //float ki_y;	//ki for y      						     //
 //float kd_y;	//kd for y      						     //
 
+float kp_a;	//kp for leader_Acc 					     //
+float ki_a;	//ki for leader_Acc 						 //
+float kd_a;	//kd for leader_Acc 					     //
+float kp_h;	//kp for hybrid 					     	 //
+float ki_h;	//ki for hybrid 						     //
+float kd_h;	//kd for hybrid 					         //
+
 
 double curError;
 double totalError = 0;
 
 double total_T = 0;
+
+double fullLeaderAcc = 0;
+double fullLeaderBrake = 0;
 
 void updateGear(int *cmdGear);
 double constrain(double lowerBoundary, double upperBoundary, double input);
@@ -172,7 +182,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//if (fabs(Dr_err) > 0.35) *cmdBrake = 1;
 	
 	//
-	expectedDistance = 10.6 + offset;
+	expectedDistance = 18 + offset;
 	
 
 
@@ -399,23 +409,45 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	total_T += 1;
 	///============================ldx: defined error============================
 
+	///============================ldx: defined fullLeaderAcc============================
+	if (leaderSpeed < 15)			fullLeaderAcc = 31.62684	+ 0.30843 * leaderSpeed;
+	else if (leaderSpeed < 50)		fullLeaderAcc = 45.6885		- 0.03638 * leaderSpeed;
+	else if (leaderSpeed < 70)		fullLeaderAcc = 47.82208	- 0.07608 * leaderSpeed;
+	else if (leaderSpeed < 90)		fullLeaderAcc = -3.41724	+ 0.59887 * leaderSpeed;
+	else if (leaderSpeed < 108)		fullLeaderAcc = 89.41145	- 0.44902 * leaderSpeed;
+	else if (leaderSpeed < 120)		fullLeaderAcc = 22.35757	+ 0.05803 * leaderSpeed;
+	else if (leaderSpeed < 147.25)	fullLeaderAcc = 62.23184	- 0.22849 * leaderSpeed;
+	else if (leaderSpeed < 160)		fullLeaderAcc = -41.17475	+ 0.41192 * leaderSpeed;
+	else if (leaderSpeed < 188.5)	fullLeaderAcc = 32.2078		- 0.06309 * leaderSpeed;
+	else if (leaderSpeed < 234.77)	fullLeaderAcc = 25.91248	- 0.05626 * leaderSpeed;
+	else if (leaderSpeed < 250)		fullLeaderAcc = 29.10202	- 0.08663 * leaderSpeed;
+	else if (leaderSpeed < 254)		fullLeaderAcc = 14.09901	- 0.02562 * leaderSpeed;
+	else							fullLeaderAcc = 7.64;
+	///============================ldx: defined fullLeaderAcc============================
+
 	///============================printf functions to monitor varieslbes============================
-	//printf("curError:%.2f\t", curError);
-	//printf("totalError:%.2f\t", totalError);
-	//printf("_Leader_X:%.2f\n", _Leader_X);
-	//printf("threshold%f\t", threshold);
-	//printf("speed:%f\t", _speed);
-	printf("_Leader_Y:%.2f\t", _Leader_Y);
-	//printf("total_T:%.2f\n", total_T);
-	//printf("Direction_error:%f\t", Dr_err);
-	printf("offset:%f\t\t", offset);
-	//printf("leaderAcc:%.0f\t\t\t", leaderAcc);
-	//printf("leaderSpeed:%.0f\n", leaderSpeed);
-	printf("cmdAcc:%f\t\t", *cmdAcc);
-	printf("cmdSteer:%f\t\t", *cmdSteer);
-	printf("cmdBrake:%f\n",*cmdBrake);
-	//printf("Dr_err:%f\t\t", Dr_err);
-	//printf("yaw:%f\n",_yaw);
+	{
+		//printf("curError:%.2f\t", curError);
+		//printf("totalError:%.2f\t", totalError);
+		//printf("_Leader_X:%.2f\n", _Leader_X);
+		//printf("threshold%f\t", threshold);
+		//printf("speed:%f\t", _speed);
+		//printf("_Leader_Y:%.2f\t", _Leader_Y);
+		//printf("total_T:%.2f\n", total_T);
+		//printf("Direction_error:%f\t", Dr_err);
+		//printf("offset:%f\t\t", offset);
+
+		//printf("fullLeaderAcc%.2f\t\t", fullLeaderAcc);//"\t\leaderSpeed:%.0f\t", fullLeaderAcc
+		printf("%.2f\t", leaderSpeed);//"\t\leaderSpeed:%.0f\t", leaderSpeed
+		printf("%.3f\n",leaderAcc);//"\t\tleaderAcc:%.0f\t", leaderAcc
+		//printf("leaderSpeed:%.0f\n", leaderSpeed);
+		//printf("cmdAcc:%f\t\t", *cmdAcc);
+		//printf("cmdSteer:%f\t\t", *cmdSteer);
+		//printf("cmdBrake:%f\n", *cmdBrake);
+		//printf("Dr_err:%f\t\t", Dr_err);
+		//printf("yaw:%f\n",_yaw);
+		//printf("Acc/speed:%f\n", 2 * leaderAcc / leaderSpeed);
+	}
 }
 
 
