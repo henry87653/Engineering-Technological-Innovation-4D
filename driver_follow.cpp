@@ -4,9 +4,9 @@
 
 	file : driver_follow.cpp
 	description :test error function
-	version: 1.3.2
+	version: 1.34.2
 
-	modified by Y at  April/16/2019 19:48
+	modified by Y at  April/18/2019 21:32
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
 
  ***************************************************************************/
@@ -185,7 +185,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	LastTimeDerr = D_err;
 	D_errSum = 0.2 * D_errSum + D_err;
 
-	offset = 4;
+	offset = 1;
 	if (fabs(leaderAcc) > fabs(maxLeaderAcc) && fabs(leaderAcc) < 300) maxLeaderAcc = leaderAcc;
 
 	cmdSpeed = constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
@@ -248,7 +248,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	*/
 	kp_dr = 1;
 	ki_dr = 0;
-	kd_dr = 0.5;
+	kd_dr = 0.6;
 
 
 	Dr_err = 2 * (1 * _yaw - 7 * atan2(_Leader_X, _Leader_Y));
@@ -258,6 +258,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	Dr_errSum = 0.2 * Dr_errSum + Dr_err;
 
 	*cmdSteer = 1 * constrain(-1.0, 1.0, kp_dr * Dr_err + ki_dr * Dr_errSum + kd_dr * Dr_errDiff);
+	if (*cmdBrake == 1)*cmdSteer = 0;
 
 	//*cmdSteer = 0.5 * constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff) + 0.5 * (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
 	//*cmdSteer = (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
@@ -281,8 +282,8 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//printf("total_T:%.2f\n", total_T);
 	//printf("Direction_error:%f\t", Dr_err);
 	//printf("offset:%f\t\t\t", offset);
-	//printf("leaderAcc:%.0f\t", leaderAcc);
-	printf("maxLAcc:%.0f  ", maxLeaderAcc);
+	printf("lAcc:%.0f  ", leaderAcc);
+	printf("mLAcc:%.0f  ", maxLeaderAcc);
 	//printf("leaderSpeed:%.0f\t", leaderSpeed);
 	printf("cmdAcc:%.1f  ", *cmdAcc);
 	printf("brake:%.1f  ",*cmdBrake);
