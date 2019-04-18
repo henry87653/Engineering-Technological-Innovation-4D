@@ -55,7 +55,8 @@ static float _Leader_X, _Leader_Y;
 const int topGear = 6;
 float distance;
 float expectedDistance;
-float leaderAcc;
+float leaderAcc = 0;
+float maxLeaderAcc = 0;
 float kAcc = 0.5;
 float leaderSpeed;
 float lastDistance;
@@ -125,7 +126,8 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	distance = pow((_Leader_X*_Leader_X + _Leader_Y * _Leader_Y), 0.5);//
 	leaderSpeed = _speed + (distance - lastDistance) * 180;
 	lastDistance = distance;
-	leaderAcc = (leaderSpeed - lastLeaderSpeed) / 0.02;
+	leaderAcc = (leaderSpeed - lastLeaderSpeed) / 0.02 * cos(-atan2(_Leader_X, _Leader_Y));
+	//leaderAcc = (leaderSpeed - lastLeaderSpeed) / 0.02;
 	lastLeaderSpeed = leaderSpeed;
 	D_err = distance - expectedDistance;
 	S_err = _speed - leaderSpeed;
@@ -176,12 +178,15 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	kp_d = 5;
 	ki_d = 0;
 	kd_d = 3;
-	expectedDistance = 13;
+	expectedDistance = 9.9 + offset;
 
 	D_err = distance - expectedDistance;
-	D_errDiff = (D_err - LastTimeDerr) / 0.02;
+	D_errDiff = (D_err - LastTimeDerr) / 0.02 ;
 	LastTimeDerr = D_err;
 	D_errSum = 0.2 * D_errSum + D_err;
+
+	offset = 4;
+	if (fabs(leaderAcc) > fabs(maxLeaderAcc) && fabs(leaderAcc) < 300) maxLeaderAcc = leaderAcc;
 
 	cmdSpeed = constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
 	if (cmdSpeed > 0) { *cmdAcc = cmdSpeed; updateGear(cmdGear); }
@@ -242,14 +247,12 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	}
 	*/
 	kp_dr = 1;
-	ki_dr = 0.1;
+	ki_dr = 0;
 	kd_dr = 0.5;
 
-	if (_speed < 20)//at the begining (initial)
-		Dr_err = -atan2(_Leader_X, _Leader_Y);
-	else
-		Dr_err = 2 * (1 * _yaw - 3 * atan2(_Leader_X, _Leader_Y));
-	//D_err = 2 * (_yaw - 3 * atan2(_Leader_X, _Leader_Y));
+
+	Dr_err = 2 * (1 * _yaw - 7 * atan2(_Leader_X, _Leader_Y));
+	//D_err = 2 * (_yaw - 7 * atan2(_Leader_X, _Leader_Y));
 
 	Dr_errDiff = Dr_err - Dr_errSum;
 	Dr_errSum = 0.2 * Dr_errSum + Dr_err;
@@ -273,18 +276,19 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//printf("totalError:%.2f\t", totalError);
 	//printf("_Leader_X:%.2f\n", _Leader_X);
 	//printf("threshold%f\t", threshold);
-	//printf("speed:%f\t", _speed);
-	//printf("_Leader_Y:%.2f\t", _Leader_Y);
+	printf("speed:%.0f  ", _speed);
+	printf("Y:%.2f  ", _Leader_Y);
 	//printf("total_T:%.2f\n", total_T);
 	//printf("Direction_error:%f\t", Dr_err);
 	//printf("offset:%f\t\t\t", offset);
 	//printf("leaderAcc:%.0f\t", leaderAcc);
+	printf("maxLAcc:%.0f  ", maxLeaderAcc);
 	//printf("leaderSpeed:%.0f\t", leaderSpeed);
-	printf("cmdAcc:%f\t", *cmdAcc);
-	printf("brake:%f\t",*cmdBrake);
+	printf("cmdAcc:%.1f  ", *cmdAcc);
+	printf("brake:%.1f  ",*cmdBrake);
 	//printf("Dr_err:%f\t\t", Dr_err);
 	//printf("yaw:%f\n",_yaw);
-	printf("expectedDistance:%.0f\n", expectedDistance);
+	printf("expD:%.0f\n", expectedDistance);
 }
 
 
