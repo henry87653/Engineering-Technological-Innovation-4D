@@ -48,6 +48,13 @@ static int InitFuncPt(int, void *pt)
 	define your variables here.
 	following are just examples
 */
+
+typedef struct Circle									//
+{														//
+	double r;											//
+	int sign;											//
+}circle;
+
 static float _midline[200][2];
 static float _yaw, _yawrate, _speed, _acc, _width, _rpm;
 static int _gearbox;
@@ -92,6 +99,8 @@ int startflag = 0;
 
 void updateGear(int *cmdGear);
 double constrain(double lowerBoundary, double upperBoundary, double input);
+circle getR(float x1, float y1, float x2, float y2, float x3, float y3);
+
 static void userDriverGetParam(float LeaderXY[2], float midline[200][2], float yaw, float yawrate, float speed, float acc, float width, int gearbox, float rpm) {
 	/* write your own code here */
 	_Leader_X = LeaderXY[0];
@@ -153,7 +162,8 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	if(leaderAcc>0)kAcc = 0.04;
 	else if(leaderSpeed<150)kAcc = 0.06;
 	else if (leaderSpeed <170)kAcc = 0.12;
-	else kAcc = 0.24;
+	else if(leaderSpeed < 200) kAcc = 0.24;
+	else kAcc = 0.4;
 
 	offset -= leaderAcc * kAcc;
 
@@ -190,11 +200,11 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			*cmdBrake=1;
 			offset += 0.5;
 		}
-		printf("!!!");
+
 	}
 	offset -= 0.1*(leaderSpeed - _speed);
 
-	expectedDistance = constrain(9.9, 20, 10.3 + offset);
+	expectedDistance = constrain(9.9, 30, 10.3 + offset);
 
 
 	//brake\acc control
@@ -281,21 +291,27 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	else
 		d_err = 2 * (1 * _yaw - 8 * atan2(_Leader_X, _Leader_Y));
 
-    if (_midline[0][0] < -6.5&&_speed>120) {
-		d_err =1* (1 * _yaw - 6 * atan2(_midline[2][0] + 6.5, _midline[2][1])+0.1)+ (1 * _yaw - 6 * atan2(_Leader_X, _Leader_Y));
-		printf("!!!");
-	}
-	if (_midline[0][0] > 7 && _speed > 120) {
-		d_err = 1* (1 * _yaw - 6 * atan2(_midline[2][0] - 7, _midline[2][1]+0.1))+(1 * _yaw - 6 * atan2(_Leader_X, _Leader_Y));
-		printf("!!!");
-	}
-
+	//printf("!%.3f", d_err);
+  
 	d_errDiff = d_err - d_errSum;
 	d_errSum = 0.2 * d_errSum + d_err;
 	*cmdSteer = 1 * constrain(-1.0, 1.0, kp_d * d_err + ki_d * d_errSum + kd_d * d_errDiff);
-	printf("%d %.3f", total_T, leaderAcc);
+	//printf("%d %.3f", total_T, leaderAcc);
+	circle CircleNear;
+	CircleNear = getR(_midline[10][0], _midline[10][1], _midline[20][0], _midline[20][1], _midline[30][0], _midline[30][1]);
 
+	//printf("R %.2f", CircleNear.r);
+	if (_midline[0][0] < -6.5&& d_err>2&&CircleNear.r<200) {
+		*cmdSteer -= 0.1;
+		*cmdBrake = 0;
+		*cmdAcc = 0.4;
+		printf("!!!");
+	}
+	/*if (_midline[0][0] > 7 && d_err < -1) {
+		d_err = 1 * (1 * _yaw - 6 * atan2(_midline[2][0] - 7, _midline[2][1] + 0.1)) + (1 * _yaw - 6 * atan2(_Leader_X, _Leader_Y));
 
+	}
+	*/
 	
 	printf("%d", total_T);
 
@@ -406,4 +422,25 @@ double constrain(double lowerBoundary, double upperBoundary, double input)
 		return lowerBoundary;
 	else
 		return input;
+}
+circle getR(float x1, float y1, float x2, float y2, float x3, float y3)
+{
+	double a, b, c, d, e, f;
+	double r, x, y;
+
+	a = 2 * (x2 - x1);
+	b = 2 * (y2 - y1);
+	c = x2 * x2 + y2 * y2 - x1 * x1 - y1 * y1;
+	d = 2 * (x3 - x2);
+	e = 2 * (y3 - y2);
+	f = x3 * x3 + y3 * y3 - x2 * x2 - y2 * y2;
+	x = (b*f - e * c) / (b*d - e * a);
+	y = (d*c - a * f) / (b*d - e * a);
+	r = sqrt((x - x1)*(x - x1) + (y - y1)*(y - y1));
+	x = constrain(-1000.0, 1000.0, x);
+	y = constrain(-1000.0, 1000.0, y);
+	r = constrain(1.0, 500.0, r);
+	int sign = (x > 0) ? 1 : -1;
+	circle tmp = { r,sign };
+	return tmp;
 }
