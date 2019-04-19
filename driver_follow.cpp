@@ -128,26 +128,32 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	{
 		offset = 0.015*(leaderSpeed - 50);
 	}
-	else if (leaderSpeed < 180)
+	else if (leaderSpeed < 170)
 	{
-		offset = 0.035*(leaderSpeed - 150) + 0.015*(leaderSpeed - 50);
+		offset = 0.035*(leaderSpeed - 150) + 0.02*(leaderSpeed - 50);
+	}
+	else if (leaderSpeed < 200)
+	{
+		offset = 0.04*(leaderSpeed - 150) + 0.02*(leaderSpeed - 50);
 	}
 	else if (leaderSpeed < 230)
 	{
-		offset = 4;
+		offset = 5;
 	}
 	else if (leaderSpeed < 250)
 	{
-		offset = 5;
+		offset =6;
 	}
 	else if (leaderSpeed > 200)
 	{
-		offset = 6;
+		offset = 6.5;
 	}
 
 	//the leader-acc modify
 	if(leaderAcc>0)kAcc = 0.04;
-	else kAcc = 0.05;
+	else if(leaderSpeed<150)kAcc = 0.06;
+	else if (leaderSpeed <170)kAcc = 0.12;
+	else kAcc = 0.24;
 
 	offset -= leaderAcc * kAcc;
 
@@ -174,10 +180,15 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			*cmdBrake += 0.3;
 			offset += 0.3;
 		}
+		if (leaderSpeed > 150)
+		{
+			*cmdBrake += 0.6;
+			offset += 0.3;
+		}
 		if (leaderSpeed > 170)
 		{
 			*cmdBrake=1;
-			offset += 0.3;
+			offset += 0.5;
 		}
 		printf("!!!");
 	}
@@ -270,19 +281,19 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	else
 		d_err = 2 * (1 * _yaw - 8 * atan2(_Leader_X, _Leader_Y));
 
-/*if (_midline[0][0] < -6.5) {
+    if (_midline[0][0] < -6.5&&_speed>120) {
 		d_err =1* (1 * _yaw - 6 * atan2(_midline[2][0] + 6.5, _midline[2][1])+0.1)+ (1 * _yaw - 6 * atan2(_Leader_X, _Leader_Y));
 		printf("!!!");
 	}
-	if (_midline[0][0] > 7) {
+	if (_midline[0][0] > 7 && _speed > 120) {
 		d_err = 1* (1 * _yaw - 6 * atan2(_midline[2][0] - 7, _midline[2][1]+0.1))+(1 * _yaw - 6 * atan2(_Leader_X, _Leader_Y));
 		printf("!!!");
 	}
-*/
+
 	d_errDiff = d_err - d_errSum;
 	d_errSum = 0.2 * d_errSum + d_err;
 	*cmdSteer = 1 * constrain(-1.0, 1.0, kp_d * d_err + ki_d * d_errSum + kd_d * d_errDiff);
-	printf("%d %.3f %.3f", total_T, _midline[0][0], *cmdSteer);
+	printf("%d %.3f", total_T, leaderAcc);
 
 
 	
