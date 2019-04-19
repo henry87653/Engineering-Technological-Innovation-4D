@@ -177,7 +177,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//
 	expectedDistance = 10.6 + offset;
 	*/
-	*cmdAcc = *cmdBrake = 0;
+	*cmdAcc = *cmdBrake = 0;//5,0,3
 	kp_d = 5;
 	ki_d = 0;
 	kd_d = 3;
@@ -207,15 +207,15 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	LastTimeDerr = D_err;
 	D_errSum = 0.2 * D_errSum + D_err;
 
-	//offset = 0.1;
+	//offset = 0.2;
 	if(leaderAcc < 0){
 		if (_speed < 130) {
-			if (-100 < leaderAcc) offset = -leaderAcc / 150;
-			else offset = 1 / 3 - leaderAcc / 100;
+			if (-100 < leaderAcc) offset = 0;
+			else offset = 0.1;
 		}
 		else if (_speed < 200) {
-			if (-60 < leaderAcc) offset = -leaderAcc / 100;
-			else offset = 1.8 - leaderAcc / 50;
+			if (-60 < leaderAcc) offset = 0;
+			else offset = 0.2;
 		}
 		else offset = 1 - leaderAcc / 50;
 	}
@@ -291,7 +291,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	kd_dr = 0.6;
 
 
-	Dr_err = 2 * (1 * _yaw - 6 * atan2(_Leader_X, _Leader_Y));
+	Dr_err = 2 * (1 * _yaw - 8 * atan2(_Leader_X, _Leader_Y));
 	//D_err = 2 * (_yaw - 7 * atan2(_Leader_X, _Leader_Y));
 
 	Dr_errDiff = Dr_err - Dr_errSum;
@@ -328,7 +328,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	printf("brake:%.1f  ",*cmdBrake);
 	//printf("Dr_err:%f\t\t", Dr_err);
 	//printf("yaw:%f\n",_yaw);
-	printf("expD:%.2f\n", expectedDistance);
+	printf("offset:%.2f\n", offset);
 }
 
 
