@@ -4,9 +4,9 @@
 
 	file : driver_follow.cpp
 	description :test error function
-	version: 1.4.3
+	version: 1.4.4
 
-	modified by Y at  April/18/2019 21:32
+	modified by Y at  April/19/2019 9:09
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
 
  ***************************************************************************/
@@ -101,6 +101,10 @@ double curError;
 double totalError = 0;
 
 double total_T = 0;
+double fullLeaderAcc = 0;
+double fullLeaderBrake = 0;
+double leadCtrlAcc = 0;		
+double leadCtrlBrake = 0;	
 
 void updateGear(int *cmdGear);
 double constrain(double lowerBoundary, double upperBoundary, double input);
@@ -178,7 +182,26 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	ki_d = 0;
 	kd_d = 3;
 	expectedDistance = 10 + offset;
+///------------------------------------------------------------------------------------------------------
+	if (leaderSpeed < 15)			fullLeaderAcc = 31.62684 + 0.30843 * leaderSpeed;
+	else if (leaderSpeed < 50)		fullLeaderAcc = 45.6885 - 0.03638 * leaderSpeed;
+	else if (leaderSpeed < 70)		fullLeaderAcc = 47.82208 - 0.07608 * leaderSpeed;
+	else if (leaderSpeed < 90)		fullLeaderAcc = -3.41724 + 0.59887 * leaderSpeed;
+	else if (leaderSpeed < 108)		fullLeaderAcc = 89.41145 - 0.44902 * leaderSpeed;
+	else if (leaderSpeed < 120)		fullLeaderAcc = 22.35757 + 0.05803 * leaderSpeed;
+	else if (leaderSpeed < 147.25)	fullLeaderAcc = 62.23184 - 0.22849 * leaderSpeed;
+	else if (leaderSpeed < 160)		fullLeaderAcc = -41.17475 + 0.41192 * leaderSpeed;
+	else if (leaderSpeed < 188.5)	fullLeaderAcc = 32.2078 - 0.06309 * leaderSpeed;
+	else if (leaderSpeed < 234.77)	fullLeaderAcc = 25.91248 - 0.05626 * leaderSpeed;
+	else if (leaderSpeed < 250)		fullLeaderAcc = 29.10202 - 0.08663 * leaderSpeed;
+	else if (leaderSpeed < 254)		fullLeaderAcc = 14.09901 - 0.02562 * leaderSpeed;
+	else							fullLeaderAcc = 7.64;
 
+	fullLeaderBrake = -0.0008 * leaderSpeed * leaderSpeed + 0.0439 * leaderSpeed - 62.618;
+
+	leadCtrlAcc = leaderAcc / fullLeaderAcc;
+	leadCtrlBrake = leaderAcc / fullLeaderBrake;
+///---------------------------------------------------------------------------------------------
 	D_err = distance - expectedDistance;
 	D_errDiff = (D_err - LastTimeDerr) / 0.02 ;
 	LastTimeDerr = D_err;
