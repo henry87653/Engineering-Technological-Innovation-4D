@@ -4,7 +4,7 @@
 
 	file : driver_follow.cpp
 	description :test error function
-	version: 1.4.4
+	version: 1.4.6
 
 	modified by Y at  April/19/2019 9:09
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
@@ -134,7 +134,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	lastLeaderSpeed = leaderSpeed;
 	D_err = distance - expectedDistance;
 	S_err = _speed - leaderSpeed;
-	
+
 
 	//ExpectedDistance
 	//Liu's expectedDistance function
@@ -182,7 +182,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	ki_d = 0;
 	kd_d = 3;
 	expectedDistance = 10 + offset;
-///------------------------------------------------------------------------------------------------------
+	///------------------------------------------------------------------------------------------------------
 	if (leaderSpeed < 15)			fullLeaderAcc = 31.62684 + 0.30843 * leaderSpeed;
 	else if (leaderSpeed < 50)		fullLeaderAcc = 45.6885 - 0.03638 * leaderSpeed;
 	else if (leaderSpeed < 70)		fullLeaderAcc = 47.82208 - 0.07608 * leaderSpeed;
@@ -201,21 +201,32 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 	leadCtrlAcc = leaderAcc / fullLeaderAcc;
 	leadCtrlBrake = leaderAcc / fullLeaderBrake;
-///---------------------------------------------------------------------------------------------
+	///---------------------------------------------------------------------------------------------
 	D_err = distance - expectedDistance;
-	D_errDiff = (D_err - LastTimeDerr) / 0.02 ;
+	D_errDiff = (D_err - LastTimeDerr) / 0.02;
 	LastTimeDerr = D_err;
 	D_errSum = 0.2 * D_errSum + D_err;
 
 	//offset = 0.2;
-	if(leaderAcc < 0){
-		if (_speed < 130) {
-			if (-100 < leaderAcc) offset = 0;
-			else offset = 0.1;
+	if (leaderAcc < 0) {
+		if (_speed < 140) {
+			if (-50 < leaderAcc) offset = 0;
+			else if (-60 < leaderAcc)offset = 1.5;
+			else if (-75 < leaderAcc) offset = 3;
+			else offset = 3;
 		}
+		else if (_speed < 160) {
+			if (-30 < leaderAcc) offset = 0;
+			else if (-60 < leaderAcc) offset = 0.3;
+			else if (-70 < leaderAcc) offset = 1.5;
+			else if (-75 < leaderAcc) offset = 2;
+			else offset = 3;
+		}
+		//else offset = 1 - leaderAcc / 50;
 		else if (_speed < 200) {
-			if (-60 < leaderAcc) offset = 0;
-			else offset = 0.2;
+			if (-30 < leaderAcc) offset = 0.5;
+			else if (-70 < leaderAcc) offset = 1.5;
+			else if (-75 < leaderAcc) offset = 2;
 		}
 		else offset = 1 - leaderAcc / 50;
 	}
@@ -230,7 +241,14 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	*/
 	cmdSpeed = constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
 	if (cmdSpeed > 0) { *cmdAcc = cmdSpeed; updateGear(cmdGear); }
-	else *cmdBrake = - cmdSpeed;
+	else *cmdBrake = -cmdSpeed;
+
+	//±£ÏÕ
+	if (expectedDistance - _Leader_Y > 1.5 || offset > 2) { *cmdAcc = 0; *cmdBrake = 1; }
+
+	if (_Leader_Y < 10) { *cmdAcc /= 4; *cmdBrake *= 4; }
+
+
 
 	//expectedDistance -----> *cmdAcc & *cmdBrake
 	/*if (distance < expectedDistance - 0.5 && S_err>0)
@@ -291,7 +309,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	kd_dr = 0.6;
 
 
-	Dr_err = 2 * (1 * _yaw - 8 * atan2(_Leader_X, _Leader_Y));
+	Dr_err = 2 * (1 * _yaw - 9 * atan2(_Leader_X, _Leader_Y));
 	//D_err = 2 * (_yaw - 7 * atan2(_Leader_X, _Leader_Y));
 
 	Dr_errDiff = Dr_err - Dr_errSum;
