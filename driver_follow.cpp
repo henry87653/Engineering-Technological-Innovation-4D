@@ -181,7 +181,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	kp_d = 5;
 	ki_d = 0;
 	kd_d = 3;
-	expectedDistance = 10 + offset;
+	expectedDistance = 9.9 + 0.5 + offset;
 	///------------------------------------------------------------------------------------------------------
 	if (leaderSpeed < 15)			fullLeaderAcc = 31.62684 + 0.30843 * leaderSpeed;
 	else if (leaderSpeed < 50)		fullLeaderAcc = 45.6885 - 0.03638 * leaderSpeed;
@@ -217,14 +217,14 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		}
 		else if (_speed < 150) {
 			if (-5 < leaderAcc) offset = 0.1;
-			else if (-60 < leaderAcc) offset = 0.3;
+			else if (-60 < leaderAcc) offset = 1;
 			else if (-70 < leaderAcc) offset = 1.6;
 			else if (-75 < leaderAcc) offset = 2;
 			else offset = 3;
 		}
 		//else offset = 1 - leaderAcc / 50;
 		else if (_speed < 200) {
-			if (-10 < leaderAcc) offset = 0.5;
+			if (-10 < leaderAcc) offset = 1.9;
 			else if (-70 < leaderAcc) offset = 1.8;
 			else if (-75 < leaderAcc) offset = 2;
 		}
