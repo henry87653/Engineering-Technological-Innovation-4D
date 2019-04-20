@@ -4,7 +4,7 @@
 
 	file : driver_follow.cpp
 	description :test error function
-	version: 1.4.6
+	version: 1.4.7
 
 	modified by Y at  April/19/2019 9:09
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
@@ -209,23 +209,23 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 	//offset = 0.2;
 	if (leaderAcc < 0) {
-		if (_speed < 140) {
+		if (_speed < 130) {
 			if (-50 < leaderAcc) offset = 0;
 			else if (-60 < leaderAcc)offset = 1.5;
 			else if (-75 < leaderAcc) offset = 3;
 			else offset = 3;
 		}
-		else if (_speed < 160) {
-			if (-30 < leaderAcc) offset = 0;
+		else if (_speed < 150) {
+			if (-5 < leaderAcc) offset = 0.1;
 			else if (-60 < leaderAcc) offset = 0.3;
-			else if (-70 < leaderAcc) offset = 1.5;
+			else if (-70 < leaderAcc) offset = 1.6;
 			else if (-75 < leaderAcc) offset = 2;
 			else offset = 3;
 		}
 		//else offset = 1 - leaderAcc / 50;
 		else if (_speed < 200) {
-			if (-30 < leaderAcc) offset = 0.5;
-			else if (-70 < leaderAcc) offset = 1.5;
+			if (-10 < leaderAcc) offset = 0.5;
+			else if (-70 < leaderAcc) offset = 1.8;
 			else if (-75 < leaderAcc) offset = 2;
 		}
 		else offset = 1 - leaderAcc / 50;
@@ -244,7 +244,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	else *cmdBrake = -cmdSpeed;
 
 	//±£ÏÕ
-	if (expectedDistance - _Leader_Y > 1.5 || offset > 2) { *cmdAcc = 0; *cmdBrake = 1; }
+	if (expectedDistance - _Leader_Y > 1.3 || offset >= 2) { *cmdAcc = 0; *cmdBrake = 1; }
 
 	if (_Leader_Y < 10) { *cmdAcc /= 4; *cmdBrake *= 4; }
 
