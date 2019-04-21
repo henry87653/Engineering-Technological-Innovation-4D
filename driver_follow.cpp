@@ -4,7 +4,7 @@
 
 	file : driver_follow.cpp
 	description :test error function
-	version: 1.4.14
+	version: 1.4.15
 
 	modified by Y at  April/21/2019 15:16
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
@@ -280,13 +280,13 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	if (-80 > leaderAcc && _speed > 100) { *cmdAcc = 0; *cmdBrake = 1; }		//为了11号专门打的补丁
 
 	if (_Leader_Y < 10) { *cmdAcc /= 4; *cmdBrake *= 4; }
-	if (_Leader_Y > 25) { *cmdAcc = 1; *cmdBrake = 0; }				//针对20打的新补丁
+	if (_Leader_Y > 25) { *cmdAcc = 1; *cmdBrake = 0; }				//针对被甩开打的新补丁
 
 
 
 	//expectedDistance -----> *cmdAcc & *cmdBrake
 	//0.9,0,0.6
-	kp_dr = 1.0;
+	kp_dr = 1.1;
 	ki_dr = 0.01;
 	kd_dr = 0.6;
 
@@ -302,7 +302,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//if (*cmdAcc > 0.5 || *cmdBrake > 0.5) { *cmdSteer /= 1.2; }
 	
 	if (fabs(*cmdSteer) > 0.5) {
-		if (_speed < 125) { *cmdAcc /= 4; *cmdBrake += 0.01; offset = 0.2; }		//7&24
+		if (_speed < 125) { *cmdAcc /= 4; *cmdBrake += 0.01; offset = 0.25; }		//7&24
 		else if(leaderAcc > -70) { *cmdAcc /= 2; *cmdBrake /= 3; }
 		else { *cmdAcc /= 1; *cmdBrake /= 3; }
 	}
