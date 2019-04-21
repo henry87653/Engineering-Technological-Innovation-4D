@@ -188,9 +188,9 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	expectedDistance = 10.6 + offset;
 	*/
 	*cmdAcc = *cmdBrake = 0;//5,0,3
-	kp_d = 0.5;
-	ki_d = 0;
-	kd_d = 0.5;
+	kp_d = 7;
+	ki_d = 0.4;
+	kd_d = 5;
 	expectedDistance = 9.9 + 0.5 + offset;
 	///------------------------------------------------------------------------------------------------------
 	if (leaderSpeed < 15)			fullLeaderAcc = 31.62684 + 0.30843 * leaderSpeed;
@@ -220,15 +220,15 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//offset = 0.2;
 	if (SpeedDown) {
 		if (_speed < 130) {
-			if (-30 < leaderAcc) offset = 0;
-			else if (-60 < leaderAcc)offset = 1.5;
+			if (-40 < leaderAcc) offset = 0;
+			else if (-60 < leaderAcc)offset = 3;
 			else if (-75 < leaderAcc) offset = 4;
 			else offset = 4;
 		}
 		else if (_speed < 150) {
 			if (-5 < leaderAcc) offset = 0.1;
-			else if (-60 < leaderAcc) offset = 1;
-			else if (-65 < leaderAcc) offset = 1.6;
+			else if (-60 < leaderAcc) offset = 2;
+			else if (-65 < leaderAcc) offset = 2.5;
 			else if (-75 < leaderAcc) offset = 3;
 			else offset = 4;
 		}
@@ -263,7 +263,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		else offset = 3;
 	}*/
 	else if (!SpeedDown) {
-		if (_speed < 130) { offset = 0; }//0
+		if (_speed < 130) { offset = 0; }//0;			
 		else offset = constrain(0, 4.5, 0.0025 * _speed * _speed - 0.715 * _speed + 50.405);
 		//else offset = constrain(0, 5,  0.0414 * _speed - 5.3276);
 	}
@@ -284,7 +284,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 
 	//expectedDistance -----> *cmdAcc & *cmdBrake
-
+	//0.9,0,0.6
 	kp_dr = 0.9;
 	ki_dr = 0;
 	kd_dr = 0.6;
@@ -297,7 +297,9 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	Dr_errSum = 0.2 * Dr_errSum + Dr_err;
 
 	*cmdSteer = 1 * constrain(-1.0, 1.0, kp_dr * Dr_err + ki_dr * Dr_errSum + kd_dr * Dr_errDiff);
-	if (*cmdBrake == 1)*cmdSteer = 0;
+	if (*cmdBrake == 1) { *cmdSteer = 0; }
+	//if (*cmdAcc > 0.5 || *cmdBrake > 0.5) { *cmdSteer /= 1.2; }
+	
 
 	//*cmdSteer = 0.5 * constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff) + 0.5 * (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
 	//*cmdSteer = (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
@@ -325,9 +327,10 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//printf("leaderSpeed:%.0f\t", leaderSpeed);
 	printf("cmdAcc:%.1f  ", *cmdAcc);
 	printf("brake:%.1f  ",*cmdBrake);
+	printf("turn:%.2f\n", *cmdSteer);
 	//printf("Dr_err:%f\t\t", Dr_err);
 	//printf("yaw:%f\n",_yaw);
-	printf("offset:%.2f\n", offset);
+	//printf("offset:%.2f\n", offset);
 }
 
 
