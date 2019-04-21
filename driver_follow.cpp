@@ -187,10 +187,10 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//
 	expectedDistance = 10.6 + offset;
 	*/
-	*cmdAcc = *cmdBrake = 0;//5,0,3
+	*cmdAcc = *cmdBrake = 0;//7,0.4,5
 	kp_d = 7;
 	ki_d = 0.4;
-	kd_d = 5;
+	kd_d = 6;
 	expectedDistance = 9.9 + 0.5 + offset;
 	///------------------------------------------------------------------------------------------------------
 	if (leaderSpeed < 15)			fullLeaderAcc = 31.62684 + 0.30843 * leaderSpeed;
@@ -280,7 +280,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	if (-80 > leaderAcc && _speed > 100) { *cmdAcc = 0; *cmdBrake = 1; }		//为了11号专门打的补丁
 
 	if (_Leader_Y < 10) { *cmdAcc /= 4; *cmdBrake *= 4; }
-	if (_Leader_Y > 25) { *cmdAcc = 1; *cmdBrake = 0; }				//针对被甩开打的新补丁
+	if (_Leader_Y > 25 && leaderAcc > -100) { *cmdAcc = 1; *cmdBrake = 0; }				//针对被甩开打的新补丁
 
 
 
@@ -302,7 +302,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//if (*cmdAcc > 0.5 || *cmdBrake > 0.5) { *cmdSteer /= 1.2; }
 	
 	if (fabs(*cmdSteer) > 0.5) {
-		if (_speed < 125) { *cmdAcc /= 4; *cmdBrake += 0.01; offset = 0.25; }		//7&24
+		if (_speed < 125) { *cmdAcc /= 4; *cmdBrake += 0.01; offset = 0.3; }		//7&24
 		else if(leaderAcc > -70) { *cmdAcc /= 2; *cmdBrake /= 3; }
 		else { *cmdAcc /= 1; *cmdBrake /= 3; }
 	}
