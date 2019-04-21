@@ -3,8 +3,8 @@
 	All rights reserved
 	file : driver_follow.cpp
 	description :test error function
-	version: 1.6.4
-	modified by L at  April/21/2019 20£º34
+	version: 1.6.5
+	modified by L at  April/21/2019 20:34
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
  ***************************************************************************/
  /*
@@ -226,9 +226,13 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		//if (_speed < 8) { offset = 0; }//0;
 		//else if (_speed < 12) { offset = 0.0; }//0;
 		//else 
-		if (_speed < 69) { offset = 0; }//0;
-		else if (_speed < 71) { offset = 0.2; }//0;
-		else if (_speed < 130) { offset = 0; }//0;//Õë¶Ô7
+		if (_speed < 66) { offset = 0; }//0;
+		else if (_speed < 68) { offset = 0.08; }//Õë¶Ô28
+		else if (_speed < 69) { offset = 0; }
+		else if (_speed < 71) { offset = 0.2; }//Õë¶Ô7
+		else if (_speed < 72) { offset = 0; }
+		else if (_speed < 74) { offset = 0.4; }
+		else if (_speed < 130) { offset = 0; }
 		else offset = constrain(0, 4.5, 0.0025 * _speed * _speed - 0.715 * _speed + 50.405);
 		//else offset = constrain(0, 5,  0.0414 * _speed - 5.3276);
 	}
