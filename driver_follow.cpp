@@ -4,9 +4,9 @@
 
 	file : driver_follow.cpp
 	description :test error function
-	version: 1.4.10
+	version: 1.4.14
 
-	modified by Y at  April/21/2019 11:24
+	modified by Y at  April/21/2019 15:16
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
 
  ***************************************************************************/
@@ -263,7 +263,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		else offset = 3;
 	}*/
 	else if (!SpeedDown) {
-		if (_speed < 130) { offset = 0.05; }//0;			
+		if (_speed < 130) { offset = 0; }//0;			
 		else offset = constrain(0, 4.5, 0.0025 * _speed * _speed - 0.715 * _speed + 50.405);
 		//else offset = constrain(0, 5,  0.0414 * _speed - 5.3276);
 	}
@@ -302,7 +302,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//if (*cmdAcc > 0.5 || *cmdBrake > 0.5) { *cmdSteer /= 1.2; }
 	
 	if (fabs(*cmdSteer) > 0.5) {
-		if (_speed < 125) { *cmdAcc /= 2; *cmdBrake /= 1; }
+		if (_speed < 125) { *cmdAcc /= 4; *cmdBrake += 0.01; offset = 0.2; }		//7&24
 		else if(leaderAcc > -70) { *cmdAcc /= 2; *cmdBrake /= 3; }
 		else { *cmdAcc /= 1; *cmdBrake /= 3; }
 	}
