@@ -3,8 +3,8 @@
 	All rights reserved
 	file : driver_follow.cpp
 	description :test error function
-	version: 1.6.2
-	modified by L at  April/21/2019 19:44
+	version: 1.6.4
+	modified by L at  April/21/2019 20£º34
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
  ***************************************************************************/
  /*
@@ -151,42 +151,6 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//else if(last3leaderAcc > 0 && last2leaderAcc > 0 && last1leaderAcc > 0) SpeedDown = 0;
 	else SpeedDown = 0;
 
-	//ExpectedDistance
-	//Liu's expectedDistance function
-	/*if (_speed < 50)
-	{
-		offset = 0;
-	}
-	else if (_speed < 150)
-	{
-		offset = 0.3*threshold*(_speed - 50) / 100;
-	}
-	else if (_speed < 200)
-	{
-		offset = 0.3 * threshold + 0.7*threshold*(_speed - 150) / 50;
-	}
-	else if (_speed < 250)
-	{
-		offset = threshold;
-	}
-	else if (_speed > 200)
-	{
-		offset = threshold;
-	}
-	if (_speed < 80 && leaderAcc>30)//speed up
-	{
-		printf("\t\t\tACCELERATE!\t\t\t");
-		offset = 0.3;
-	}
-	//if (leaderAcc < -35)//brake
-	//{
-	//	printf("\t\t\tBRAKE!\t\t\t");
-	//	offset = -0.1 * leaderAcc + 1/(_Leader_Y - 9.899);
-	//}
-	//if (fabs(Dr_err) > 0.35) *cmdBrake = 1;
-	//
-	expectedDistance = 10.6 + offset;
-	*/
 	*cmdAcc = *cmdBrake = 0;//5,0,3
 	kp_d = 7;
 	ki_d = 0.4;
@@ -259,7 +223,12 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		else offset = 5;
 	}
 	else if (!SpeedDown) {
-		if (_speed < 130) { offset = 0; }//0;			
+		//if (_speed < 8) { offset = 0; }//0;
+		//else if (_speed < 12) { offset = 0.0; }//0;
+		//else 
+		if (_speed < 69) { offset = 0; }//0;
+		else if (_speed < 71) { offset = 0.2; }//0;
+		else if (_speed < 130) { offset = 0; }//0;//Õë¶Ô7
 		else offset = constrain(0, 4.5, 0.0025 * _speed * _speed - 0.715 * _speed + 50.405);
 		//else offset = constrain(0, 5,  0.0414 * _speed - 5.3276);
 	}
@@ -267,7 +236,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 	if (isBrakeContinue) {
 		printf(" *BC*");
-		offset = 8;
+		offset = 12;
 	}
 
 	cmdSpeed =constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
@@ -331,7 +300,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//printf("totalError:%.2f\t", totalError);
 	//printf("_Leader_X:%.2f\n", _Leader_X);
 	//printf("threshold%f\t", threshold);
-	printf("speed:%.0f  ", _speed);
+	printf("speed:%.2f  ", _speed);
 	printf("Y:%.2f  ", _Leader_Y);
 	//printf("total_T:%.2f\n", total_T);
 	//printf("Direction_error:%f\t", Dr_err);
