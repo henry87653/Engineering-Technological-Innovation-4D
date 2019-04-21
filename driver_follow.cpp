@@ -263,7 +263,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		else offset = 3;
 	}*/
 	else if (!SpeedDown) {
-		if (_speed < 130) { offset = 0; }//0;			
+		if (_speed < 130) { offset = 0.05; }//0;			
 		else offset = constrain(0, 4.5, 0.0025 * _speed * _speed - 0.715 * _speed + 50.405);
 		//else offset = constrain(0, 5,  0.0414 * _speed - 5.3276);
 	}
@@ -286,7 +286,7 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//expectedDistance -----> *cmdAcc & *cmdBrake
 	//0.9,0,0.6
 	kp_dr = 0.9;
-	ki_dr = 0;
+	ki_dr = 0.01;
 	kd_dr = 0.6;
 
 
@@ -297,15 +297,11 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	Dr_errSum = 0.2 * Dr_errSum + Dr_err;
 
 	*cmdSteer = 1 * constrain(-1.0, 1.0, kp_dr * Dr_err + ki_dr * Dr_errSum + kd_dr * Dr_errDiff);
-	if (*cmdBrake == 1) { *cmdSteer = 0; }
+	//if (*cmdBrake == 1) { *cmdSteer = 0; }
 	//if (*cmdAcc > 0.5 || *cmdBrake > 0.5) { *cmdSteer /= 1.2; }
 	
-
-	//*cmdSteer = 0.5 * constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff) + 0.5 * (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
-	//*cmdSteer = (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
-
-	/* you can modify the print code here to show what you want */
-	//printf(" follow %.3f leader%.3f   XY(%.3f, %.3f)\n", _speed, leaderSpeed, _Leader_X, _Leader_Y);
+	if (fabs(*cmdSteer) == 1) { *cmdAcc /= 3; *cmdBrake /= 1; }
+	//if (fabs(*cmdSteer) == 1) { *cmdAcc /= 2; *cmdBrake /= 1; }
 
 	///============================ldx: defined error============================
 	curError = sqrt(25 * (_Leader_X * _Leader_X) + (_Leader_Y * _Leader_Y));
