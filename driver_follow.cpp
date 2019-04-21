@@ -222,22 +222,22 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		if (_speed < 130) {
 			if (-40 < leaderAcc) offset = 0;
 			else if (-60 < leaderAcc)offset = 3;
-			else if (-75 < leaderAcc) offset = 4;
-			else offset = 4;
+			else if (-75 < leaderAcc) offset = 10;
+			else offset = 10;
 		}
 		else if (_speed < 150) {
 			if (-5 < leaderAcc) offset = 0.1;
 			else if (-60 < leaderAcc) offset = 2;
 			else if (-65 < leaderAcc) offset = 2.5;
-			else if (-75 < leaderAcc) offset = 3;
-			else offset = 4;
+			else if (-75 < leaderAcc) offset = 10;
+			else offset = 10;
 		}
 		else if (_speed < 180) {
 			if (-5 < leaderAcc) offset = 0.5;
 			else if (-60 < leaderAcc) offset = 2;
 			else if (-70 < leaderAcc) offset = 3;
-			else if (-75 < leaderAcc) offset = 4;
-			else offset = 5;
+			else if (-75 < leaderAcc) offset = 10;
+			else offset = 10;
 		}
 		else if (_speed < 200) {
 			if (-10 < leaderAcc) offset = 3;
@@ -280,12 +280,13 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	if (-80 > leaderAcc && _speed > 100) { *cmdAcc = 0; *cmdBrake = 1; }		//为了11号专门打的补丁
 
 	if (_Leader_Y < 10) { *cmdAcc /= 4; *cmdBrake *= 4; }
+	if (_Leader_Y > 25) { *cmdAcc = 1; *cmdBrake = 0; }				//针对20打的新补丁
 
 
 
 	//expectedDistance -----> *cmdAcc & *cmdBrake
 	//0.9,0,0.6
-	kp_dr = 0.9;
+	kp_dr = 1.0;
 	ki_dr = 0.01;
 	kd_dr = 0.6;
 
@@ -300,7 +301,11 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//if (*cmdBrake == 1) { *cmdSteer = 0; }
 	//if (*cmdAcc > 0.5 || *cmdBrake > 0.5) { *cmdSteer /= 1.2; }
 	
-	if (fabs(*cmdSteer) == 1) { *cmdAcc /= 3; *cmdBrake /= 1; }
+	if (fabs(*cmdSteer) > 0.5) {
+		if (_speed < 125) { *cmdAcc /= 2; *cmdBrake /= 1; }
+		else if(leaderAcc > -70) { *cmdAcc /= 2; *cmdBrake /= 3; }
+		else { *cmdAcc /= 1; *cmdBrake /= 3; }
+	}
 	//if (fabs(*cmdSteer) == 1) { *cmdAcc /= 2; *cmdBrake /= 1; }
 
 	///============================ldx: defined error============================
