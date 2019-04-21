@@ -3,8 +3,8 @@
 	All rights reserved
 	file : driver_follow.cpp
 	description :test error function
-	version: 1.4.15
-	modified by Y at  April/21/2019 15:16
+	version: 1.6.2
+	modified by L at  April/21/2019 19:44
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
  ***************************************************************************/
  /*
@@ -264,9 +264,10 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		//else offset = constrain(0, 5,  0.0414 * _speed - 5.3276);
 	}
 	if (_speed > 250) offset = 5.5;
+
 	if (isBrakeContinue) {
-		printf(" BrakeContinue");
-		offset = 10;
+		printf(" *BC*");
+		offset = 8;
 	}
 
 	cmdSpeed =constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
@@ -308,12 +309,16 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		*cmdBrake = 1;
 	}*/
 
-	if (fabs(*cmdSteer) > 0.5) {
+	if (fabs(*cmdSteer) > 0.5 && !isBrakeContinue) {
 		if (_speed < 125) { *cmdAcc /= 4; *cmdBrake += 0.01; offset = 0.25; }		//7&24
 		else if (leaderAcc > -70) { *cmdAcc /= 2; *cmdBrake /= 3; }
 		else { *cmdAcc /= 1; *cmdBrake /= 3; }
 	}
 	//if (fabs(*cmdSteer) == 1) { *cmdAcc /= 2; *cmdBrake /= 1; }
+
+	*cmdSteer = constrain(-1, 1, *cmdSteer);
+	*cmdAcc = constrain(0, 1, *cmdAcc);
+	*cmdBrake = constrain(0, 1, *cmdBrake);
 
 	///============================ldx: defined error============================
 	curError = sqrt(25 * (_Leader_X * _Leader_X) + (_Leader_Y * _Leader_Y));
@@ -332,10 +337,11 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//printf("Direction_error:%f\t", Dr_err);
 	printf("offset:%f ", offset);
 	printf("lAcc:%.0f  ", leaderAcc);
-	//printf("leaderSpeed:%.0f\t", leaderSpeed);
-	printf("cmdAcc:%.1f  ", *cmdAcc);
-	printf("brake:%.1f  ", *cmdBrake);
-	printf("ldCtrBrk:%.3f  ", leadCtrlBrake);//leadCtrlBrake
+	printf("lSpd:%.0f  ", leaderSpeed);
+	printf("cmdA:%.2f  ", *cmdAcc);
+	printf("cmdB:%.2f  ", *cmdBrake);
+	printf("lCB:%.2f  ", leadCtrlBrake);
+	printf("lCA:%.2f  ", leadCtrlAcc);
 	printf("turn:%.2f\n", *cmdSteer);
 	//printf("Dr_err:%f\t\t", Dr_err);
 	//printf("yaw:%f\n",_yaw);
