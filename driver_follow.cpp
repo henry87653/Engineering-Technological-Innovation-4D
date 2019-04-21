@@ -4,9 +4,9 @@
 
 	file : driver_follow.cpp
 	description :test error function
-	version: 1.4.9
+	version: 1.4.10
 
-	modified by Y at  April/21/2019 1:32
+	modified by Y at  April/21/2019 11:24
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
 
  ***************************************************************************/
@@ -188,9 +188,9 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	expectedDistance = 10.6 + offset;
 	*/
 	*cmdAcc = *cmdBrake = 0;//5,0,3
-	kp_d = 0.9;
+	kp_d = 0.5;
 	ki_d = 0;
-	kd_d = 1;
+	kd_d = 0.5;
 	expectedDistance = 9.9 + 0.5 + offset;
 	///------------------------------------------------------------------------------------------------------
 	if (leaderSpeed < 15)			fullLeaderAcc = 31.62684 + 0.30843 * leaderSpeed;
@@ -222,29 +222,30 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		if (_speed < 130) {
 			if (-30 < leaderAcc) offset = 0;
 			else if (-60 < leaderAcc)offset = 1.5;
-			else if (-75 < leaderAcc) offset = 3;
-			else offset = 3;
+			else if (-75 < leaderAcc) offset = 4;
+			else offset = 4;
 		}
 		else if (_speed < 150) {
 			if (-5 < leaderAcc) offset = 0.1;
 			else if (-60 < leaderAcc) offset = 1;
-			else if (-70 < leaderAcc) offset = 1.6;
-			else if (-75 < leaderAcc) offset = 2;
-			else offset = 3;
+			else if (-65 < leaderAcc) offset = 1.6;
+			else if (-75 < leaderAcc) offset = 3;
+			else offset = 4;
 		}
 		else if (_speed < 180) {
 			if (-5 < leaderAcc) offset = 0.5;
-			else if (-60 < leaderAcc) offset = 1.5;
-			else if (-70 < leaderAcc) offset = 2;
-			else if (-75 < leaderAcc) offset = 2.5;
-			else offset = 3;
+			else if (-60 < leaderAcc) offset = 2;
+			else if (-70 < leaderAcc) offset = 3;
+			else if (-75 < leaderAcc) offset = 4;
+			else offset = 5;
 		}
 		else if (_speed < 200) {
-			if (-10 < leaderAcc) offset = 2.4;
-			else if (-70 < leaderAcc) offset = 2.5;
-			else if (-75 < leaderAcc) offset = 2;
+			if (-10 < leaderAcc) offset = 3;
+			else if (-70 < leaderAcc) offset = 4;
+			else if (-75 < leaderAcc) offset = 4;
 		}
-		else offset = 1 - leaderAcc / 50;
+		//else offset = 1 - leaderAcc / 50;
+		else offset = 5;
 	}
 	/*else {
 		if (_speed < 130) {
@@ -263,16 +264,20 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	}*/
 	else if (!SpeedDown) {
 		if (_speed < 130) { offset = 0; }//0
-		else offset = constrain(0, 5, 0.0025 * _speed * _speed - 0.715 * _speed + 50.405);
+		else offset = constrain(0, 4.5, 0.0025 * _speed * _speed - 0.715 * _speed + 50.405);
 		//else offset = constrain(0, 5,  0.0414 * _speed - 5.3276);
 	}
+	if (_speed > 250) offset = 5.5;
 	
 	cmdSpeed = constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
 	if (cmdSpeed > 0) { *cmdAcc = cmdSpeed; updateGear(cmdGear); }
 	else *cmdBrake = -cmdSpeed;
 
 	//保险
-	if (expectedDistance - _Leader_Y > 1.3 || offset >= 2.9) { *cmdAcc = 0; *cmdBrake = 1; }
+	//if (expectedDistance - _Leader_Y > 1.3 || offset >= 3) { *cmdAcc = 0; *cmdBrake = 1; }
+	if (expectedDistance - _Leader_Y > 1.3 ) { *cmdAcc = 0; *cmdBrake = 1; }
+
+	if (-80 > leaderAcc && _speed > 100) { *cmdAcc = 0; *cmdBrake = 1; }		//为了11号专门打的补丁
 
 	if (_Leader_Y < 10) { *cmdAcc /= 4; *cmdBrake *= 4; }
 
