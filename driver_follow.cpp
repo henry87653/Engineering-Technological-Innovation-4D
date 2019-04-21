@@ -95,6 +95,7 @@ double totalError = 0;
 
 int total_T = 0;
 int startflag = 0;
+int curveflag = 0;
 
 
 void updateGear(int *cmdGear);
@@ -159,15 +160,15 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	}
 
 	//the leader-acc modify
-	if(leaderAcc>0)kAcc = 0.04;
+	if(leaderAcc>0)kAcc = 0.08;
 	else if(leaderSpeed<150)kAcc = 0.06;
 	else if (leaderSpeed <170)kAcc = 0.12;
 	else if(leaderSpeed < 200) kAcc = 0.24;
-	else kAcc = 0.4;
+	else kAcc = 0.5;
 
 	offset -= leaderAcc * kAcc;
 
-	if (leaderAcc < -20&& leaderSpeed<70)
+/*	if (leaderAcc < -20&& leaderSpeed<70)
 	{
 		offset += 0.3;
 	}
@@ -181,24 +182,23 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 			offset += 0.3;
 		}
 	}
+	*/
+
 	if (leaderAcc < -50)
 	{
 		offset += 0.3;
 	
 		if (leaderSpeed > 120)
 		{
-			*cmdBrake += 0.3;
 			offset += 0.3;
 		}
 		if (leaderSpeed > 150)
 		{
-			*cmdBrake += 0.6;
-			offset += 0.3;
+			offset += 0.5;
 		}
 		if (leaderSpeed > 170)
 		{
-			*cmdBrake=1;
-			offset += 0.5;
+			offset += 1;
 		}
 
 	}
@@ -209,8 +209,8 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 
 	//brake\acc control
 
-	kp_D = 0.062;
-	ki_D = 0.42;
+	kp_D = 0.1;
+	ki_D = 0.5;
 	kd_D = 0.01;
 
 	D_err = distance - expectedDistance;
@@ -223,22 +223,48 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	if (VALUE > 0)
 	{
 		*cmdAcc = VALUE;
-		updateGear(cmdGear);
 	}
-
 	else
 	{
 		*cmdBrake = -VALUE;
-		updateGear(cmdGear);
 	}
 
-	if (_speed - leaderSpeed > 15 && D_err<1)
+	
+	if (_speed - leaderSpeed > 2.5 && leaderSpeed < 7 && total_T>500)
+	{
+		*cmdAcc = 0;
+		*cmdBrake -=0.3;
+	}
+	
+
+	if (_speed - leaderSpeed < -10 && D_err>1)
+	{
+		*cmdAcc += 0.05* D_err;
+	
+	}
+
+
+	if (_speed - leaderSpeed < -15 && D_err>3)
+	{
+		*cmdAcc += 0.1;
+	}
+
+	if (leaderSpeed < 15 && leaderAcc>30)*cmdAcc = 1;
+	else if (leaderSpeed < 50 && leaderAcc>43)*cmdAcc = 1;
+	else if (leaderSpeed<90&&leaderAcc>0.5*leaderSpeed-3.4)*cmdAcc = 1;
+	else if (leaderSpeed<108 && leaderAcc>-0.45*leaderSpeed + 89.4)*cmdAcc = 1;
+	else if (leaderSpeed < 147 && leaderAcc>28)*cmdAcc = 1;
+	else if (leaderSpeed < 188 && leaderAcc>29)*cmdAcc = 1;
+	else if (leaderSpeed < 235 && leaderAcc>12)*cmdAcc = 1;
+	else if (leaderSpeed<260 && leaderAcc>7.6)*cmdAcc = 1;
+
+	if (_speed - leaderSpeed > 15 && D_err < 1)
 	{
 		*cmdAcc -= 0.2;
 		*cmdBrake += 0.2;
 		if (leaderSpeed > 150)*cmdBrake += 0.3;
 	}
-	if (_speed - leaderSpeed >25&& D_err<3)
+	if (_speed - leaderSpeed > 25 && D_err < 3)
 	{
 		*cmdAcc -= 0.1;
 		*cmdBrake += 0.3;
@@ -248,25 +274,26 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		*cmdAcc -= 0.1;
 		*cmdBrake += 0.3;
 	}
-	if (_speed - leaderSpeed>6 && leaderSpeed<30 && total_T>500)
-	{
-		*cmdAcc =0;
-		*cmdBrake =1;
-	}
-	if (_speed - leaderSpeed > 3 && leaderSpeed < 7 && total_T>500)
+	if (_speed - leaderSpeed > 6 && leaderSpeed < 30 && total_T>500)
 	{
 		*cmdAcc = 0;
-		*cmdBrake = 0.3;
+		*cmdBrake -= 0.5;
 	}
-	if (_speed - leaderSpeed < -10 && D_err>1)
+
+	if (leaderAcc < -0.0008*leaderSpeed*leaderSpeed + 0.0439*leaderSpeed - 60)
 	{
-		*cmdAcc += 0.1;
-		*cmdBrake -= 0.1;
+		*cmdBrake = 1;
 	}
-	if (_speed - leaderSpeed < -15 && D_err>3)
+
+	if (_Leader_Y < 10.3)    //the final protect
 	{
-		*cmdAcc += 0.1;
-		*cmdBrake -= 0.1;
+		*cmdAcc = 0;
+		*cmdBrake += 0.3;
+	}
+	if (_Leader_Y < 10.05)    //the final protect
+	{
+		*cmdAcc = 0;
+		*cmdBrake =1;
 	}
 	
 
@@ -277,43 +304,95 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		*cmdAcc = 0;
 		startflag++;
 	}
+	*cmdAcc = constrain(0, 1, *cmdAcc);
+	*cmdBrake = constrain(0, 1, *cmdBrake);
 
 	
 
 
 	//direction control
+	circle CircleNear, CircleFar, CircleFoot;
+	CircleNear = getR(_midline[10][0], _midline[10][1], _midline[20][0], _midline[20][1], _midline[30][0], _midline[30][1]);
+	CircleFar = getR(_midline[20][0], _midline[20][1], _midline[40][0], _midline[40][1], _midline[60][0], _midline[60][1]);
+	
+	//printf("R %.2f", CircleFar.r);
+
 	kp_d = 1;
 	ki_d = 0;
 	kd_d = 0.6;
 
+	bool isCurve = false;
+	
+
 	if (_speed < 20)//at the begining (initial)
 		d_err = -atan2(_Leader_X, _Leader_Y);
-	else
-		d_err = 2 * (1 * _yaw - 8 * atan2(_Leader_X, _Leader_Y));
 
-	//printf("!%.3f", d_err);
+	else if (CircleNear.r < 200 && CircleFar.r < 120)//at the curve
+	{
+		isCurve = true;
+		curveflag++;
+		d_err = 8* _yaw - 20 * atan2(_Leader_X - 0.5, _Leader_Y);
+		printf("curve%d ",curveflag);
+		
+	}
+
+	else
+	{
+		d_err = 2 * (4 * _yaw - 8 * atan2(_Leader_X, _Leader_Y));
+		isCurve = false;
+		curveflag = 0;
+	}
+
+	updateGear(cmdGear);
+
+	
+	//printf("!%.3f ", d_err);
   
 	d_errDiff = d_err - d_errSum;
 	d_errSum = 0.2 * d_errSum + d_err;
 	*cmdSteer = 1 * constrain(-1.0, 1.0, kp_d * d_err + ki_d * d_errSum + kd_d * d_errDiff);
-	//printf("%d %.3f", total_T, leaderAcc);
-	circle CircleNear;
-	CircleNear = getR(_midline[10][0], _midline[10][1], _midline[20][0], _midline[20][1], _midline[30][0], _midline[30][1]);
 
-	//printf("R %.2f", CircleNear.r);
-	if (_midline[0][0] < -6.5&& d_err>2&&CircleNear.r<200) {
+	if (isCurve)*cmdSteer += 0.1;
+	/*
+	if (isCurve&&curveflag<50)
+	{
+		*cmdAcc -= 0.2;
+		*cmdBrake += 0.2;
+	}
+	*/
+	if (isCurve && d_err > 0.6  && _speed > 150 && _midline[0][0] < -6.2)  //prevent slipping
+	{
+		//*cmdAcc -= 0.3;
+		*cmdSteer += 0.3;
+		printf("safety");
+	}
+	*cmdSteer = constrain(-1, 1, *cmdSteer);
+	if ((*cmdSteer == 1 || *cmdSteer == -1)&&isCurve)*cmdAcc = constrain(0, 0.5, *cmdAcc);
+
+	printf("%.3f ", *cmdSteer);
+	
+
+	/*
+	if (_midline[0][0] < -6 && CircleFar.r<250) {
 		*cmdSteer -= 0.1;
 		*cmdBrake = 0;
 		*cmdAcc = 0.4;
 		printf("!!!");
 	}
+	if (_midline[0][0] < -6.5&& d_err>2 && CircleNear.r < 250) {
+		*cmdSteer -= 0.1;
+		*cmdBrake = 0.2;
+		*cmdAcc = 0.3;
+		printf("!!!");
+	}
+	*/
 	/*if (_midline[0][0] > 7 && d_err < -1) {
 		d_err = 1 * (1 * _yaw - 6 * atan2(_midline[2][0] - 7, _midline[2][1] + 0.1)) + (1 * _yaw - 6 * atan2(_Leader_X, _Leader_Y));
 
 	}
 	*/
 	
-	printf("%d", total_T);
+	printf(" %d", total_T);
 
 	//*cmdSteer = 0.5 * constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff) + 0.5 * (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
 	//*cmdSteer = (_yaw - 8 * atan2(_Leader_X, _Leader_Y));
