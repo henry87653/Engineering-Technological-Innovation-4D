@@ -236,7 +236,13 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		else offset = constrain(0, 4.5, 0.0025 * _speed * _speed - 0.715 * _speed + 50.405);
 		//else offset = constrain(0, 5,  0.0414 * _speed - 5.3276);
 	}
-	if (_speed > 250) offset = 5.5;
+	//if (_speed > 250) offset = 6;
+	if (leaderSpeed > 250) offset = 6;
+	/*if (leaderSpeed > 230) {
+		if	(leaderAcc < -70) offset = 7;
+		else if (leaderAcc < -50) offset = 6;
+		else offset = 5.5;
+	}*/
 
 	if (isBrakeContinue) {
 		printf(" *BC*");
