@@ -2,9 +2,9 @@
 	Copyright (C) 2019
 	All rights reserved
 	file : driver_follow.cpp
-	description :test error function
-	version: 1.6.5
-	modified by L at  April/21/2019 20:34
+	description :from1.4.15优化11、28
+	version: 1.6.7
+	modified by Y at  April/21/2019 15:16
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
  ***************************************************************************/
  /*
@@ -106,13 +106,13 @@ double fullLeaderAcc = 0;
 double fullLeaderBrake = 0;
 double leadCtrlAcc = 0;
 double leadCtrlBrake = 0;
+
 double l1lCB = 0;
 double l2lCB = 0;
 double l3lCB = 0;
 double l4lCB = 0;
 double l5lCB = 0;
 double l6lCB = 0;
-
 bool isBrakeContinue = false;
 
 void updateGear(int *cmdGear);
@@ -151,11 +151,47 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//else if(last3leaderAcc > 0 && last2leaderAcc > 0 && last1leaderAcc > 0) SpeedDown = 0;
 	else SpeedDown = 0;
 
+	//ExpectedDistance
+	//Liu's expectedDistance function
+	/*if (_speed < 50)
+	{
+		offset = 0;
+	}
+	else if (_speed < 150)
+	{
+		offset = 0.3*threshold*(_speed - 50) / 100;
+	}
+	else if (_speed < 200)
+	{
+		offset = 0.3 * threshold + 0.7*threshold*(_speed - 150) / 50;
+	}
+	else if (_speed < 250)
+	{
+		offset = threshold;
+	}
+	else if (_speed > 200)
+	{
+		offset = threshold;
+	}
+	if (_speed < 80 && leaderAcc>30)//speed up
+	{
+		printf("\t\t\tACCELERATE!\t\t\t");
+		offset = 0.3;
+	}
+	//if (leaderAcc < -35)//brake
+	//{
+	//	printf("\t\t\tBRAKE!\t\t\t");
+	//	offset = -0.1 * leaderAcc + 1/(_Leader_Y - 9.899);
+	//}
+	//if (fabs(Dr_err) > 0.35) *cmdBrake = 1;
+	//
+	expectedDistance = 10.6 + offset;
+	*/
 	*cmdAcc = *cmdBrake = 0;//5,0,3
 	kp_d = 7;
 	ki_d = 0.4;
 	kd_d = 5;
-	expectedDistance = 9.9 + 0.6 + offset;
+	expectedDistance = 9.9 + 0.5 + offset;
 	///------------------------------------------------------------------------------------------------------
 	if (leaderSpeed < 15)			fullLeaderAcc = 31.62684 + 0.30843 * leaderSpeed;
 	else if (leaderSpeed < 50)		fullLeaderAcc = 45.6885 - 0.03638 * leaderSpeed;
@@ -179,13 +215,11 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	l3lCB = l2lCB;
 	l2lCB = l1lCB;
 	l1lCB = leadCtrlBrake;
-	
+
 	leadCtrlAcc = leaderAcc / fullLeaderAcc;
 	leadCtrlBrake = leaderAcc / fullLeaderBrake;
 
 	isBrakeContinue = (l6lCB > 0.75) && (l5lCB > 0.75) && (l4lCB > 0.75) && (l3lCB > 0.75) && (l2lCB > 0.75) && (l1lCB > 0.75) && (leadCtrlBrake > 0.75);
-	//isBrakeContinue = (l2lCB > 0.75) && (l1lCB > 0.75) && (leadCtrlBrake > 0.75);
-
 	///---------------------------------------------------------------------------------------------
 	D_err = distance - expectedDistance;
 	D_errDiff = (D_err - LastTimeDerr) / 0.02;
@@ -193,7 +227,10 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	D_errSum = 0.2 * D_errSum + D_err;
 
 	//offset = 0.2;
-	if (SpeedDown) {
+	if (isBrakeContinue) {
+		offset = 12;
+	}
+	else if (SpeedDown) {
 		if (_speed < 130) {
 			if (-40 < leaderAcc) offset = 0;
 			else if (-60 < leaderAcc)offset = 3;
@@ -223,33 +260,16 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 		else offset = 5;
 	}
 	else if (!SpeedDown) {
-		//if (_speed < 8) { offset = 0; }//0;
-		//else if (_speed < 12) { offset = 0.0; }//0;
-		//else 
 		if (_speed < 66) { offset = 0; }//0;
-		else if (_speed < 68) { offset = 0.08; }//针对28
-		else if (_speed < 69) { offset = 0; }
-		else if (_speed < 71) { offset = 0.2; }//针对7
-		else if (_speed < 72) { offset = 0; }
-		else if (_speed < 74) { offset = 0.4; }
+		else if (_speed < 68) { offset = 0; }//针对28
 		else if (_speed < 130) { offset = 0; }
 		else offset = constrain(0, 4.5, 0.0025 * _speed * _speed - 0.715 * _speed + 50.405);
 		//else offset = constrain(0, 5,  0.0414 * _speed - 5.3276);
 	}
-	//if (_speed > 250) offset = 6;
-	if (leaderSpeed > 250) offset = 6;
-	/*if (leaderSpeed > 230) {
-		if	(leaderAcc < -70) offset = 7;
-		else if (leaderAcc < -50) offset = 6;
-		else offset = 5.5;
-	}*/
+	//if (_speed > 250) offset = 5.5;
+	if (leaderSpeed > 250) offset = 7;
 
-	if (isBrakeContinue) {
-		printf(" *BC*");
-		offset = 12;
-	}
-
-	cmdSpeed =constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
+	cmdSpeed = constrain(-1.0, 1.0, kp_d * D_err + ki_d * D_errSum + kd_d * D_errDiff);
 	if (cmdSpeed > 0) { *cmdAcc = cmdSpeed; updateGear(cmdGear); }
 	else *cmdBrake = -cmdSpeed;
 
@@ -281,23 +301,12 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//if (*cmdBrake == 1) { *cmdSteer = 0; }
 	//if (*cmdAcc > 0.5 || *cmdBrake > 0.5) { *cmdSteer /= 1.2; }
 
-	//===================================ldx brake========================================
-	/*if (isBrakeContinue) {
-		printf(" isBrakeContinue!");
-		*cmdAcc = 0;
-		*cmdBrake = 1;
-	}*/
-
 	if (fabs(*cmdSteer) > 0.5 && !isBrakeContinue) {
 		if (_speed < 125) { *cmdAcc /= 4; *cmdBrake += 0.01; offset = 0.25; }		//7&24
 		else if (leaderAcc > -70) { *cmdAcc /= 2; *cmdBrake /= 3; }
 		else { *cmdAcc /= 1; *cmdBrake /= 3; }
 	}
 	//if (fabs(*cmdSteer) == 1) { *cmdAcc /= 2; *cmdBrake /= 1; }
-
-	*cmdSteer = constrain(-1, 1, *cmdSteer);
-	*cmdAcc = constrain(0, 1, *cmdAcc);
-	*cmdBrake = constrain(0, 1, *cmdBrake);
 
 	///============================ldx: defined error============================
 	curError = sqrt(25 * (_Leader_X * _Leader_X) + (_Leader_Y * _Leader_Y));
@@ -310,17 +319,15 @@ static void userDriverSetParam(float* cmdAcc, float* cmdBrake, float* cmdSteer, 
 	//printf("totalError:%.2f\t", totalError);
 	//printf("_Leader_X:%.2f\n", _Leader_X);
 	//printf("threshold%f\t", threshold);
-	printf("speed:%.2f  ", _speed);
+	printf("speed:%.0f  ", _speed);
 	printf("Y:%.2f  ", _Leader_Y);
 	//printf("total_T:%.2f\n", total_T);
 	//printf("Direction_error:%f\t", Dr_err);
-	printf("offset:%f ", offset);
+	printf("offset:%f  ", offset);
 	printf("lAcc:%.0f  ", leaderAcc);
-	printf("lSpd:%.0f  ", leaderSpeed);
-	printf("cmdA:%.2f  ", *cmdAcc);
-	printf("cmdB:%.2f  ", *cmdBrake);
-	printf("lCB:%.2f  ", leadCtrlBrake);
-	printf("lCA:%.2f  ", leadCtrlAcc);
+	//printf("leaderSpeed:%.0f\t", leaderSpeed);
+	printf("cmdAcc:%.1f  ", *cmdAcc);
+	printf("brake:%.1f  ", *cmdBrake);
 	printf("turn:%.2f\n", *cmdSteer);
 	//printf("Dr_err:%f\t\t", Dr_err);
 	//printf("yaw:%f\n",_yaw);
