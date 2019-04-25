@@ -1,22 +1,2 @@
 ﻿D:\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(377,5): warning MSB8004: Output 目录未以斜杠结尾。  此生成实例将添加斜杠，因为必须有这个斜杠才能正确计算 Output 目录。
-  driver_parking.cpp
-c:\users\henry\desktop\engineering practice and technological innovation-4d\driver_parking\driver_parking\driver_parking.cpp(108): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-c:\users\henry\desktop\engineering practice and technological innovation-4d\driver_parking\driver_parking\driver_parking.cpp(112): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-c:\users\henry\desktop\engineering practice and technological innovation-4d\driver_parking\driver_parking\driver_parking.cpp(119): warning C4305: “=”: 从“double”到“float”截断
-c:\users\henry\desktop\engineering practice and technological innovation-4d\driver_parking\driver_parking\driver_parking.cpp(123): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-c:\users\henry\desktop\engineering practice and technological innovation-4d\driver_parking\driver_parking\driver_parking.cpp(124): warning C4305: “=”: 从“double”到“float”截断
-c:\users\henry\desktop\engineering practice and technological innovation-4d\driver_parking\driver_parking\driver_parking.cpp(125): warning C4305: “=”: 从“double”到“float”截断
-c:\users\henry\desktop\engineering practice and technological innovation-4d\driver_parking\driver_parking\driver_parking.cpp(130): warning C4305: “=”: 从“double”到“float”截断
-c:\users\henry\desktop\engineering practice and technological innovation-4d\driver_parking\driver_parking\driver_parking.cpp(131): warning C4305: “=”: 从“double”到“float”截断
-c:\users\henry\desktop\engineering practice and technological innovation-4d\driver_parking\driver_parking\driver_parking.cpp(137): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-c:\users\henry\desktop\engineering practice and technological innovation-4d\driver_parking\driver_parking\driver_parking.cpp(138): warning C4305: “=”: 从“double”到“float”截断
-c:\users\henry\desktop\engineering practice and technological innovation-4d\driver_parking\driver_parking\driver_parking.cpp(139): warning C4305: “=”: 从“double”到“float”截断
-c:\users\henry\desktop\engineering practice and technological innovation-4d\driver_parking\driver_parking\driver_parking.cpp(145): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-c:\users\henry\desktop\engineering practice and technological innovation-4d\driver_parking\driver_parking\driver_parking.cpp(155): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-c:\users\henry\desktop\engineering practice and technological innovation-4d\driver_parking\driver_parking\driver_parking.cpp(158): warning C4305: “=”: 从“double”到“float”截断
-c:\users\henry\desktop\engineering practice and technological innovation-4d\driver_parking\driver_parking\driver_parking.cpp(159): warning C4305: “=”: 从“double”到“float”截断
-c:\users\henry\desktop\engineering practice and technological innovation-4d\driver_parking\driver_parking\driver_parking.cpp(163): warning C4305: “=”: 从“double”到“float”截断
-c:\users\henry\desktop\engineering practice and technological innovation-4d\driver_parking\driver_parking\driver_parking.cpp(164): warning C4305: “=”: 从“double”到“float”截断
-c:\users\henry\desktop\engineering practice and technological innovation-4d\driver_parking\driver_parking\driver_parking.cpp(169): warning C4244: “=”: 从“double”转换到“float”，可能丢失数据
-    正在创建库 D:\CyberTORCS_2019Spring_Student\cyberparking\driver_parking.lib 和对象 D:\CyberTORCS_2019Spring_Student\cyberparking\driver_parking.exp
   driver_parking.vcxproj -> D:\CyberTORCS_2019Spring_Student\cyberparking\driver_parking.dll

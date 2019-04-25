@@ -1,11 +1,12 @@
-/***************************************************************************
-
-    file                 : user3.cpp
-    author            : Xuangui Huang
-    email              : stslxg@gmail.com
-    description    :  user module for CyberParking
-
- ***************************************************************************/
+ /***************************************************************************
+	 Copyright (C) 2019
+	 All rights reserved
+	 file : driver_parking.cpp
+	 description :
+	 version: 1.0.0
+	 modified by Lu at  April/25/2019 13:13
+	 https://github.com/henry87653/Engineering-Technological-Innovation-4D
+  ***************************************************************************/
 
 /*      
      WARNING !
