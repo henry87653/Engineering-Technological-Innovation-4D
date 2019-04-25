@@ -2,9 +2,9 @@
 	 Copyright (C) 2019
 	 All rights reserved
 	 file : driver_parking.cpp
-	 description :注释to TA's code
-	 version: 1.0.1
-	 modified by Lu at  April/25/2019 13:13
+	 description :助教代码原结构上修改，能够跑下来；更多注释to TA's code
+	 version: 1.0.2
+	 modified by Lu at  April/26/2019 0:00
 	 https://github.com/henry87653/Engineering-Technological-Innovation-4D
   ***************************************************************************/
 
@@ -66,6 +66,15 @@ static float _yaw, _yawrate, _speed, _acc, _width, _rpm, _lotX, _lotY, _lotAngle
 static int _gearbox;
 static bool _bFrontIn;
 
+static int flag = 0;//类型判断，1-5;5：巡线，4：靠右，3：转弯进车位，2：朝向与车位几乎一致
+static float k,b,dist;
+static int flagt = 0;
+
+int topGear = 6;
+
+float distance = 0;//车辆与车位中心点距离
+bool isEscaping = false;
+
 static void userDriverGetParam(float lotX, float lotY, float lotAngle, bool bFrontIn, float carX, float carY, float caryaw, float midline[200][2], float yaw, float yawrate, float speed, float acc, float width, int gearbox, float rpm){
 	/* write your own code here */
 	
@@ -86,13 +95,8 @@ static void userDriverGetParam(float lotX, float lotY, float lotAngle, bool bFro
 	_rpm = rpm;
 	_gearbox = gearbox;
 
-	//printf("speed %.3f yaw %.2f distance^2 %.3f\n", _speed, _caryaw, (_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) );
-	printf("lotX %.6f  lotY %.6f",_lotX,_lotY);
+	distance = sqrt((_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY));
 }
-
-static int flag = 0;//类型判断，1-5
-static float k,b,dist;
-static int flagt = 0;
 
 static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake, float* cmdSteer, int* cmdGear){   
 	/* write your own code here */
@@ -107,32 +111,44 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 
 	
 	if ( flagt == 1 ){//泊车完成，猛冲倒车，出车位
+		printf("  test1  ");
 		*cmdAcc = 1;
 		*cmdBrake = 0;
 		*cmdGear = -1;
-		*cmdSteer = (_yaw -atan2( _midline[10][0]+_width/3,_midline[10][1]))/3.14;//ldx:we can modify?
+		*cmdSteer = (_yaw -atan2( _midline[10][0]+_width/3,_midline[10][1]))/ PI;//ldx:we can modify?
+		//if (distance > 12) flagt = 0;
 	}else
 	{
-		if ((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 0.5 ) {    //用车速判断是否完成泊车//0~0.5
-			*cmdSteer = 20*(_lotAngle -_caryaw)/3.14 ;//ldx:we can modify? eg 15 *
+		if ((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 0.5 ) 
+		{    
+			printf("  test2  ");
+			//用车速判断是否完成泊车//0~0.5
+			*cmdSteer = 20*(_lotAngle -_caryaw + PI)/ PI;//ldx:we can modify? eg 15 *  // + PI
 			if(*cmdSteer > 1)
 			    *cmdSteer = 1;
 			if( _speed < 0.01){
 			    *bFinished = true;
-				flagt = 1;//泊车完成标志flagt = 1}
+				flagt = 1;//泊车完成标志flagt = 1
+			}
 			else
-			{*cmdBrake = 0.1;*cmdGear = 1;*cmdAcc = 0;}
+				{*cmdBrake = 0.1;*cmdGear = 1;*cmdAcc = 0;}
 			flag = 1; 
-		}else if( ((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 10)&& ( flagt ==2 )) { 
+		}
+		else if( ((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 10)&& ( flagt ==2 )) 
+		{ 
+			printf("  test3  ");
 			//0.5~10
 			//接近停车位时，控制车的朝向与车位一致，速度控制在2
 			//*cmdSteer = 0;
-			*cmdSteer = 20*(_lotAngle -_caryaw)/3.14 ;//ldx:we can modify? eg 15 *
+			*cmdSteer = 5*(_lotAngle -_caryaw + PI)/ PI;//ldx:we can modify? eg 15 *
 			if( _speed > 2 ){*cmdBrake = 0.1;*cmdGear = 1;*cmdAcc = 0;}
 			else if(_speed >0.07){*cmdBrake = 0;*cmdGear = 1;*cmdAcc = 0.1;}
-			else{*bFinished = true;flagt=1; }//ldx: *bFinished = true 明显有问题，要注释掉
+			else{*bFinished = true;flagt=1; }//ldx: *bFinished = true 明显有问题，要注释掉?
 			flag = 2;
-		} else if (((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 500 && dist <7.2)&&(flagt!=2)){
+		} 
+		else if (((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 500 && dist <7.2)&&(flagt!=2))
+		{
+			printf("  test4  ");
 			//
 			//较接近停车位时，给一个大的转向，速度控制在10			
 		    *cmdSteer = 1;
@@ -142,52 +158,98 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 				flagt = 2;
 			}
 			flag = 3;
-		} else if ((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 5000) { //到一定范围时，将车子调整至道路右侧，增加转弯半径，速度控制在15
-			*cmdSteer = (_yaw -atan2( _midline[10][0]+_width/3,_midline[10][1]))/3.14;
+		} 
+		else if ((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 5000) 
+		{ 
+			printf("  test5  ");
+			//到一定范围时，将车子调整至道路右侧，增加转弯半径，速度控制在15
+			*cmdSteer = (_yaw -atan2( _midline[10][0]+_width/3,_midline[10][1]))/ PI;
 			if( _speed > 15 ){*cmdBrake = 0.2;*cmdGear = 1;*cmdAcc = 0;}
 			else{*cmdBrake = 0;*cmdGear = 1;*cmdAcc = 0.1;}
 			flag = 4;
 		}
-		else {			                                                                         //其它路段按巡线方式行驶
+		else
+		{
+			printf("  test6  ");
+			//其它路段按巡线方式行驶
 			*cmdAcc = 1;//油门给100%
 		    *cmdBrake = 0;//无刹车
-		    *cmdSteer = (_yaw -8*atan2( _midline[30][0],_midline[30][1]))/3.14 ;//设定舵机方向//ldx: we can modify? ex. midline[10]
+		    *cmdSteer = (_yaw -8*atan2( _midline[30][0],_midline[30][1]))/ PI;//设定舵机方向//ldx: we can modify? ex. midline[10]
 		    *cmdGear = 1;//档位始终挂1
 			flag = 5;
 	    }
 	}
 
 	
-	if(*bFinished)
+	if(*bFinished)//停车完成后，出车位跑
 	{
-		if ((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 10 ) { //接近停车位时，控制车的朝向与车位一致，速度控制在2
-			*cmdSteer = 20*(_lotAngle -_caryaw)/3.14 ;
+		if ((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 10 ) 
+		{
+			printf("  test7  ");
+			//接近停车位时，控制车的朝向与车位一致，速度控制在2
+			*cmdSteer = -20*(_lotAngle -_caryaw)/ PI;
 			if(*cmdSteer > 1)
 			    *cmdSteer = 1;
 			if( _speed > 2 ){*cmdBrake = 0.1;*cmdGear = -1;*cmdAcc = 0;}
 			else{*cmdBrake = 0;*cmdGear = -1;*cmdAcc = 0.1;}
 		}
-		else if ((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 500 && dist <7.2 ){//较接近停车位时，给一个大的转向，速度控制在10			
+		else if ((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 500 && dist <7.2 && !isEscaping )
+		{
+			printf("  test8  ");
+			//较接近停车位时，给一个大的转向，速度控制在10			
 		    *cmdSteer = 1;
 			if( _speed > 10 ){*cmdBrake = 0.2;*cmdGear = -1;*cmdAcc = 0;}
 			else{*cmdBrake = 0;*cmdGear = -1;*cmdAcc = 0.1;}
+			if (fabs(_yaw) < 0.8) isEscaping = true;
 		}
-		else {			                                                                         //其它路段按巡线方式行驶
+		else 
+		{
+			printf("  test9  ");
+			//其它路段按巡线方式行驶
 			*cmdAcc = 1;//油门给100%
 		    *cmdBrake = 0;//无刹车
-		    *cmdSteer = (_yaw -8*atan2( _midline[30][0],_midline[30][1]))/3.14 ;//设定舵机方向
-		    *cmdGear = 1;//档位始终挂1
+		    *cmdSteer = (_yaw -8*atan2( _midline[30][0],_midline[30][1]))/ PI;//设定舵机方向
+			updateGear(cmdGear); //*cmdGear = 1;//档位始终挂1
 	    }
 
 
 	}
 	
+	
+
+	///=======================================printf functions============================================
+	//printf("speed %.3f yaw %.2f distance %.3f\n", _speed, _caryaw, (_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) );
+	// printf("lotX %.6f  lotY %.6f", _lotX, _lotY);
+	//printf("Steer:%.2f\tflag:%d\tspeed:%.2f\tdist:%.2f\tlotAngle:%.2f\tcaryaw:%.2f\tflagt:%d\n",*cmdSteer,flag,_speed,dist,_lotAngle,_caryaw,flagt);
+	//printf("Steer:%.2f\tflag:%d\tflagt:%d\n",*cmdSteer,flag,flagt);
+	/*printf("bFinished:%d ", *bFinished);
+	printf("flag:%d ", flag);*/
+	printf("flagt:%d ", flagt);
+	/*printf("speed:%.1f ", _speed);
+	printf("_lotX:%.1f ", _lotX);
+	printf("_lotY:%.1f ", _lotY);
+	//printf("_lotAngle:%.1f ", _lotAngle);
+	printf("carX:%.1f ", _carX);
+	printf("carY:%.1f ", _carY);
+	printf("caryaw:%.1f ", _caryaw);
+	printf("dist:%.1f ", dist);*/
+	printf("distance:%.1f ", distance);
+
+	/*printf("*Acc:%.1f ", *cmdAcc);
+	printf("Brake:%.1f ", *cmdBrake);
+	//printf("*cmdGear:%d ", *cmdGear);
+	printf("Steer:%.1f ", *cmdSteer);
+	//if(*bFinished)printf("\n============bFinished============\n");*/
+
+	printf("yaw:%.1f ", _yaw);
+	printf("isEscaping:%d ", isEscaping);
+
+	printf("\n");
+	///=======================================printf functions============================================
+
 	*cmdAcc = constrain(0, 1, *cmdAcc);
 	*cmdBrake = constrain(0, 1, *cmdBrake);
-	*cmdAcc = constrain(-1, 1, *cmdAcc);
-
-	printf("Steer:%.2f\tflag:%d\tspeed:%.2f\tdist:%.2f\tlotAngle:%.2f\tcaryaw:%.2f\tflagt:%d\n",*cmdSteer,flag,_speed,dist,_lotAngle,_caryaw,flagt);
-	printf("Steer:%.2f\tflag:%d\tflagt:%d\n",*cmdSteer,flag,flagt);
+	*cmdSteer = constrain(-1, 1, *cmdSteer);
 }
 
 ///=================helping functions from TA no need to modify============================
