@@ -2,8 +2,12 @@
 	 Copyright (C) 2019
 	 All rights reserved
 	 file : driver_parking.cpp
-	 description :助教代码原结构上修改，能够跑下来；更多注释to TA's code
-	 version: 1.0.2
+	 description :
+		助教代码跑不下来的原因：
+		1.某些地方逻辑出错（1.0.1， 1.0.2已经修改）
+		2.未考虑道路本身半径
+		改进方向：用相切圆的方法，考虑道路半径
+	 version: 1.0.3
 	 modified by Lu at  April/26/2019 0:00
 	 https://github.com/henry87653/Engineering-Technological-Innovation-4D
   ***************************************************************************/
@@ -222,24 +226,24 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 	// printf("lotX %.6f  lotY %.6f", _lotX, _lotY);
 	//printf("Steer:%.2f\tflag:%d\tspeed:%.2f\tdist:%.2f\tlotAngle:%.2f\tcaryaw:%.2f\tflagt:%d\n",*cmdSteer,flag,_speed,dist,_lotAngle,_caryaw,flagt);
 	//printf("Steer:%.2f\tflag:%d\tflagt:%d\n",*cmdSteer,flag,flagt);
-	/*printf("bFinished:%d ", *bFinished);
-	printf("flag:%d ", flag);*/
+	printf("bFinished:%d ", *bFinished);
+	printf("flag:%d ", flag);
 	printf("flagt:%d ", flagt);
-	/*printf("speed:%.1f ", _speed);
+	printf("speed:%.1f ", _speed);
 	printf("_lotX:%.1f ", _lotX);
 	printf("_lotY:%.1f ", _lotY);
 	//printf("_lotAngle:%.1f ", _lotAngle);
 	printf("carX:%.1f ", _carX);
 	printf("carY:%.1f ", _carY);
 	printf("caryaw:%.1f ", _caryaw);
-	printf("dist:%.1f ", dist);*/
+	printf("dist:%.1f ", dist);
 	printf("distance:%.1f ", distance);
 
-	/*printf("*Acc:%.1f ", *cmdAcc);
+	printf("*Acc:%.1f ", *cmdAcc);
 	printf("Brake:%.1f ", *cmdBrake);
 	//printf("*cmdGear:%d ", *cmdGear);
 	printf("Steer:%.1f ", *cmdSteer);
-	//if(*bFinished)printf("\n============bFinished============\n");*/
+	//if(*bFinished)printf("\n============bFinished============\n");
 
 	printf("yaw:%.1f ", _yaw);
 	printf("isEscaping:%d ", isEscaping);
