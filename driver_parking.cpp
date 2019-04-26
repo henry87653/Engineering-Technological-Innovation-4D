@@ -1,9 +1,9 @@
-/***************************************************************************
+﻿/***************************************************************************
 	 Copyright (C) 2019
 	 All rights reserved
 	 file : driver_parking.cpp
-	 description :��ѧ�������ע�͡��������
-	 version: 0.0.4
+	 description :对学长代码的变量输出、变量解释（在输出部分，未完成）
+	 version: 0.0.5
 	 modified by Lu at  April/26/2019 10:27
 	 https://github.com/henry87653/Engineering-Technological-Innovation-4D
   ***************************************************************************/
@@ -107,13 +107,13 @@ double constrain(double lowerBoundary, double upperBoundary, double input)
 	else
 		return input;
 }
-//push back�ǰ�value�ŵ�arr[4]�У�arr�е�����ֵ˳��ǰ�ƣ�arr[0]������
+//push back是把value放到arr[4]中，arr中的其他值顺次前移，arr[0]被舍弃
 void push_back(float arr[], float value) {
 	for (int i = 0; i < 4; i++)
 		arr[i] = arr[i + 1];
 	arr[4] = value;
 }
-//getMean:ȡ������arr[]��arr[0]��arr[4]һ��5��Ԫ�ص�ƽ��ֵ
+//getMean:取得数组arr[]中arr[0]到arr[4]一共5个元素的平均值
 float getMean(float arr[]) {
 	float sum = 0;
 	for (int i = 4; i >= 0; i = i - 1)
@@ -263,27 +263,27 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 
 	}
 	///=======================================printf functions============================================
-	printf("=== ")
-		printf("bFinished:%d ", *bFinished);
-	printf("backcar:%d ", backcar);
-	printf("Stop:%d ", Stop);
-	printf("TurnRight:%d ", TurnRight);
-	printf("FirstStop:%d ", FirstStop);
-	printf("startLeftShift:%d ", startLeftShift);
-	printf("ass:%d ", ass);
+	printf("=== ");
+	//printf("bFinished:%d ", *bFinished);//parking is finished?(only change once)
+	//printf("backcar:%d ", backcar);//is back car start? (only change once)
+	//rintf("Stop:%d ", Stop);//parking is finished?(only change once)比bFinished置1更早一点（约6个周期）
+	//printf("TurnRight:%d ", TurnRight);//入库之前的右转开始
+	//printf("FirstStop:%d ", FirstStop);//右转完成，开始倒车flag
+	//printf("startLeftShift:%d ", startLeftShift);//接近车位，开始向左调整flag，留出位置
+	//printf("ass:%d ", ass);//没看出来，车位1#，ass全程=1
 
-	printf("speed:%.1f ", _speed);
+	/*printf("speed:%.1f ", _speed);
 	printf("lotX:%.1f ", _lotX);
 	printf("lotY:%.1f ", _lotY);
 	printf("_lotAngle:%.1f ", _lotAngle);
 	printf("carX:%.1f ", _carX);
 	printf("carY:%.1f ", _carY);
-	printf("caryaw:%.1f ", _caryaw);
-	printf("parkdist:%.1f ", parkdist);
+	printf("caryaw:%.1f ", _caryaw);*/
+	//printf("parkdist:%.1f ", parkdist);
 	printf("distance:%.1f ", distance);
 	printf("haltX:%.1f ", haltX);
 	printf("haltY:%.1f ", haltY);
-	printf("midlined:%.1f ", midlined);
+	/*printf("midlined:%.1f ", midlined);
 	printf("angle:%.1f ", angle);
 
 	printf("parkDist[0]:%.1f ", parkDist[0]);
@@ -300,7 +300,7 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 
 	printf("avgPark:%.1f ", avgPark);
 	printf("avgAngle:%.1f ", avgAngle);
-	printf("state :%d ", state);
+	printf("state :%d ", state);*/
 
 	printf("Acc:%.1f ", *cmdAcc);
 	printf("Brake:%.1f ", *cmdBrake);
