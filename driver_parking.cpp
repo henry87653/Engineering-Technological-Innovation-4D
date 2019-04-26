@@ -2,9 +2,9 @@
 	 Copyright (C) 2019
 	 All rights reserved
 	 file : driver_parking.cpp
-	 description :对学长代码的变量输出
-	 version: 0.0.3
-	 modified by Lu at  April/26/2019 10:04
+	 description :对学长代码的注释、变量输出
+	 version: 0.0.4
+	 modified by Lu at  April/26/2019 10:27
 	 https://github.com/henry87653/Engineering-Technological-Innovation-4D
   ***************************************************************************/
 
@@ -107,13 +107,13 @@ double constrain(double lowerBoundary, double upperBoundary, double input)
 	else
 		return input;
 }
-//???
+//push back是把value放到arr[4]中，arr中的其他值顺次前移，arr[0]被舍弃
 void push_back(float arr[], float value) {
 	for (int i = 0; i < 4; i++)
 		arr[i] = arr[i + 1];
 	arr[4] = value;
 }
-//取得数组arr[]中arr[0]到arr[4]一共5个元素的平均值
+//getMean:取得数组arr[]中arr[0]到arr[4]一共5个元素的平均值
 float getMean(float arr[]) {
 	float sum = 0;
 	for (int i = 4; i >= 0; i = i - 1)
@@ -263,7 +263,8 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 
 	}
 	///=======================================printf functions============================================
-	printf("bFinished:%d ", *bFinished);
+	printf("=== ")
+		printf("bFinished:%d ", *bFinished);
 	printf("backcar:%d ", backcar);
 	printf("Stop:%d ", Stop);
 	printf("TurnRight:%d ", TurnRight);
