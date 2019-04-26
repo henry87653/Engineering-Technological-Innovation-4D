@@ -1,4 +1,20 @@
 ﻿/***************************************************************************
+<<<<<<< HEAD
+	 Copyright (C) 2019
+	 All rights reserved
+	 file : driver_parking.cpp
+	 description :对学长代码的变量输出、变量解释（在输出部分，未完成）
+	 version: 0.0.5
+	 modified by Lu at  April/26/2019 10:27
+	 https://github.com/henry87653/Engineering-Technological-Innovation-4D
+  ***************************************************************************/
+
+  /*
+  WARNING !
+
+  DO NOT MODIFY CODES BELOW!
+  */
+=======
 
 	file                 : user3.cpp
 	author            : Xuangui Huang
@@ -12,6 +28,7 @@
 
 	  DO NOT MODIFY CODES BELOW!
  */
+>>>>>>> 050c65bde2cc9c5601560cefff3fcfa02e0ab6f6
 
 #ifdef _WIN32
 #include <windows.h>
@@ -89,6 +106,33 @@ static int flag = 0;
 static float k, b, dist;
 static int flagt = 0;
 
+<<<<<<< HEAD
+///=================helping functions from TA no need to modify============================
+double constrain(double lowerBoundary, double upperBoundary, double input)
+{
+	if (input > upperBoundary)
+		return upperBoundary;
+	else if (input < lowerBoundary)
+		return lowerBoundary;
+	else
+		return input;
+}
+//push back是把value放到arr[4]中，arr中的其他值顺次前移，arr[0]被舍弃
+void push_back(float arr[], float value) {
+	for (int i = 0; i < 4; i++)
+		arr[i] = arr[i + 1];
+	arr[4] = value;
+}
+//getMean:取得数组arr[]中arr[0]到arr[4]一共5个元素的平均值
+float getMean(float arr[]) {
+	float sum = 0;
+	for (int i = 4; i >= 0; i = i - 1)
+		sum = sum + arr[i];
+	return sum / 5;
+}
+///=================helping functions from TA no need to modify============================
+=======
+>>>>>>> 050c65bde2cc9c5601560cefff3fcfa02e0ab6f6
 static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, float* cmdSteer, int* cmdGear) {
 	/* write your own code here */
 	if (abs(_lotAngle) > (PI / 2 - 0.05) && abs(_lotAngle) < (PI / 2 + 0.05))   //计算车辆中心与泊车位所在直线的距离，用以判断是否开始泊车
@@ -190,9 +234,67 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 			*cmdGear = 1;//档位始终挂1
 		}
 	}
+<<<<<<< HEAD
+	///=======================================printf functions============================================
+	printf("=== ");
+	//printf("bFinished:%d ", *bFinished);//parking is finished?(only change once)
+	//printf("backcar:%d ", backcar);//is back car start? (only change once)
+	//rintf("Stop:%d ", Stop);//parking is finished?(only change once)比bFinished置1更早一点（约6个周期）
+	//printf("TurnRight:%d ", TurnRight);//入库之前的右转开始
+	//printf("FirstStop:%d ", FirstStop);//右转完成，开始倒车flag
+	//printf("startLeftShift:%d ", startLeftShift);//接近车位，开始向左调整flag，留出位置
+	//printf("ass:%d ", ass);//没看出来，车位1#，ass全程=1
+
+	/*printf("speed:%.1f ", _speed);
+	printf("lotX:%.1f ", _lotX);
+	printf("lotY:%.1f ", _lotY);
+	printf("_lotAngle:%.1f ", _lotAngle);
+	printf("carX:%.1f ", _carX);
+	printf("carY:%.1f ", _carY);
+	printf("caryaw:%.1f ", _caryaw);*/
+	//printf("parkdist:%.1f ", parkdist);
+	printf("distance:%.1f ", distance);
+	printf("haltX:%.1f ", haltX);
+	printf("haltY:%.1f ", haltY);
+	/*printf("midlined:%.1f ", midlined);
+	printf("angle:%.1f ", angle);
+
+	printf("parkDist[0]:%.1f ", parkDist[0]);
+	printf("[1]:%.1f ", parkDist[1]);
+	printf("[2]:%.1f ", parkDist[2]);
+	printf("[3]:%.1f ", parkDist[3]);
+	printf("[4]:%.1f  ", parkDist[4]);
+
+	printf("parkAngle[0]:%.1f ", parkAngle[0]);
+	printf("[1]:%.1f ", parkAngle[1]);
+	printf("[2]:%.1f ", parkAngle[2]);
+	printf("[3]:%.1f ", parkAngle[3]);
+	printf("[4]:%.1f  ", parkAngle[4]);
+
+	printf("avgPark:%.1f ", avgPark);
+	printf("avgAngle:%.1f ", avgAngle);
+	printf("state :%d ", state);*/
+
+	printf("Acc:%.1f ", *cmdAcc);
+	printf("Brake:%.1f ", *cmdBrake);
+	//printf("*cmdGear:%d ", *cmdGear);
+	printf("Steer:%.1f ", *cmdSteer);
+	//if(*bFinished)printf("\n============bFinished============\n");
+
+	printf("yaw:%.1f ", _yaw);
+
+	printf("\n");
+	///=======================================printf functions============================================
+
+	*cmdAcc = constrain(0, 1, *cmdAcc);
+	*cmdBrake = constrain(0, 1, *cmdBrake);
+	*cmdSteer = constrain(-1, 1, *cmdSteer);
+}
+=======
 
 
 
 	printf("Steer:%.2f flag:%d speed:%.2f dist:%.2f lotAngle:%.2f caryaw:%.2f\n", *cmdSteer, flag, _speed, dist, _lotAngle, _caryaw);
 	printf("Steer:%.2f flag:%d flagt:%d\n", *cmdSteer, flag, flagt);
 }
+>>>>>>> 050c65bde2cc9c5601560cefff3fcfa02e0ab6f6
