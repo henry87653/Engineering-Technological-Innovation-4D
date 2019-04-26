@@ -1,11 +1,12 @@
 /***************************************************************************
-
-file : user3.cpp
-author : Xuangui Huang
-email : stslxg@gmail.com
-description : user module for CyberParking
-
-***************************************************************************/
+	 Copyright (C) 2019
+	 All rights reserved
+	 file : driver_parking.cpp
+	 description :对学长代码的变量输出
+	 version: 0.0.1
+	 modified by Lu at  April/26/2019 10:04
+	 https://github.com/henry87653/Engineering-Technological-Innovation-4D
+  ***************************************************************************/
 
 /*
 WARNING !
@@ -72,7 +73,7 @@ X5 = 44.61, Y5 = 397.07;
 static void userDriverGetParam(float lotX, float lotY, float lotAngle,
 	bool bFrontIn, float carX, float carY, float caryaw, float midline[200][2],
 	float yaw, float yawrate, float speed, float acc, float width, int gearbox, float rpm) {
-	float a, b;
+	float a, b;//???
 	_lotX = lotX;
 	_lotY = lotY;
 	_lotAngle = lotAngle;
@@ -95,11 +96,13 @@ static int state = 0;
 static bool backcar = false;
 static bool Stop = false, TurnRight = false, FirstStop = false, startLeftShift = false;
 int ass = 0;
+//???
 void push_back(float arr[], float value) {
 	for (int i = 0; i < 4; i++)
 		arr[i] = arr[i + 1];
 	arr[4] = value;
 }
+//取得数组arr[]中arr[0]到arr[4]一共5个元素的平均值
 float getMean(float arr[]) {
 	float sum = 0;
 	for (int i = 4; i >= 0; i = i - 1)
@@ -241,7 +244,58 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 		*cmdBrake = 0;
 		*cmdGear = 1;
 
-	}	
+	}
+	///=======================================printf functions============================================
+	printf("bFinished:%d ", *bFinished);
+	printf("backcar:%d ", backcar);
+	printf("Stop:%d ", Stop);
+	printf("TurnRight:%d ", TurnRight);
+	printf("FirstStop:%d ", FirstStop);
+	printf("startLeftShift:%d ", startLeftShift);
+	printf("ass:%d ", ass);
+
+	printf("speed:%.1f ", _speed);
+	printf("lotX:%.1f ", _lotX);
+	printf("lotY:%.1f ", _lotY);
+	printf("_lotAngle:%.1f ", _lotAngle);
+	printf("carX:%.1f ", _carX);
+	printf("carY:%.1f ", _carY);
+	printf("caryaw:%.1f ", _caryaw);
+	printf("parkdist:%.1f ", parkdist);
+	printf("distance:%.1f ", distance);
+	printf("haltX:%.1f ", haltX);
+	printf("haltY:%.1f ", haltY);
+	printf("midlined:%.1f ", midlined);
+	printf("angle:%.1f ", angle);
+
+	printf("parkDist[0]:%.1f ", parkDist[0]);
+	printf("[1]:%.1f ", parkDist[1]);
+	printf("[2]:%.1f ", parkDist[2]);
+	printf("[3]:%.1f ", parkDist[3]);
+	printf("[4]:%.1f  ", parkDist[4]);
+
+	printf("parkAngle[0]:%.1f ", parkAngle[0]);
+	printf("[1]:%.1f ", parkAngle[1]);
+	printf("[2]:%.1f ", parkAngle[2]);
+	printf("[3]:%.1f ", parkAngle[3]);
+	printf("[4]:%.1f  ", parkAngle[4]);
+
+	printf("avgPark:%.1f ", avgPark);
+	printf("avgAngle:%.1f ", avgAngle);
+	printf("state :%d ", state);
+
+	printf("Acc:%.1f ", *cmdAcc);
+	printf("Brake:%.1f ", *cmdBrake);
+	//printf("*cmdGear:%d ", *cmdGear);
+	printf("Steer:%.1f ", *cmdSteer);
+	//if(*bFinished)printf("\n============bFinished============\n");
+
+	printf("yaw:%.1f ", _yaw);
+	
+	printf("\n");
+	///=======================================printf functions============================================
+
+	*cmdAcc = constrain(0, 1, *cmdAcc);
+	*cmdBrake = constrain(0, 1, *cmdBrake);
+	*cmdSteer = constrain(-1, 1, *cmdSteer);
 }
-
-
