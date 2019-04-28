@@ -230,8 +230,8 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 	printf("flag:%d ", flag);
 	printf("flagt:%d ", flagt);
 	printf("speed:%.1f ", _speed);
-	printf("_lotX:%.1f ", _lotX);
-	printf("_lotY:%.1f ", _lotY);
+	printf("lotX:%.1f ", _lotX);
+	printf("lotY:%.1f ", _lotY);
 	//printf("_lotAngle:%.1f ", _lotAngle);
 	printf("carX:%.1f ", _carX);
 	printf("carY:%.1f ", _carY);
