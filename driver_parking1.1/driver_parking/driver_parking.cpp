@@ -2,8 +2,10 @@
 	 Copyright (C) 2019
 	 All rights reserved
 	 file : driver_parking.cpp
-	 description :使用车尾入库。用相切圆的方法，考虑道路半径
-	 version: 1.1.0
+	 description :学长代码，删除赛道判断；总成绩42.484
+		 改进方向：车位必然在道路左边，但是未必是左转弯路段，可能有右转路段
+		 使用车尾入库。用相切圆的方法，考虑道路半径
+	 version: 1.1.1
 	 modified by Lu at  April/28/2019 16:09
 	 https://github.com/henry87653/Engineering-Technological-Innovation-4D
   ***************************************************************************/
@@ -72,7 +74,7 @@ static int flagt = 0;
 
 int topGear = 6;
 
-float distance = 0;//车辆与车位中心点距离
+//float distance = 0;//车辆与车位中心点距离
 bool isEscaping = false;
 
 static float haltX, haltY, midlined, parkdist, distance, angle;
@@ -103,11 +105,18 @@ startLeftShift);//接近车位，开始向左调整flag，留出位置
 */
 int ass = 0; //是否训练车位。若车位1到5#，则ass=1；否则ass=0；
 
+float
+X1 = 168.36, Y1 = 138.54,
+X2 = 149.51, Y2 = 138.57,
+X3 = 31.55, Y3 = 183.43,
+X4 = 29.49, Y4 = 346.81,
+X5 = 44.61, Y5 = 397.07;
+
 //引入辅助类，函数
 typedef struct Circle
 {
 	double r;
-	int sign;
+	int sign;//向左-1，向右1
 }circle;
 
 circle getR(float x1, float y1, float x2, float y2, float x3, float y3);
@@ -163,17 +172,19 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 	avgPark = getMean(parkDist);
 	avgAngle = getMean(parkAngle);
 
-	if (distance < sqrt(0.008)) Stop = true;
-	if (distance < sqrt(4000.0)) startLeftShift = true;
+	if (distance < 0.09) Stop = true;// sqrt(0.008)
+	if (distance < 63) startLeftShift = true;//sqrt(4000.0)
 	if (midlined < 20) TurnRight = true;
 	if (midlined < 5)  FirstStop = true;
-
+	
 	/*CircleSpeed = getR(_midline[startPoint][0], _midline[startPoint][1], _midline[startPoint + delta][0], _midline[startPoint + delta][1], _midline[startPoint + 2 * delta][0], _midline[startPoint + 2 * delta][1]);
 	CircleNear = getR(_midline[10][0], _midline[10][1], _midline[20][0], _midline[20][1], _midline[30][0], _midline[30][1]);
 	CircleMiddle = getR(_midline[10][0], _midline[10][1], _midline[30][0], _midline[30][1], _midline[50][0], _midline[50][1]);
 	CircleFar = getR(_midline[70][0], _midline[70][1], _midline[90][0], _midline[90][1], _midline[110][0], _midline[110][1]);*/
-	CircleFoot = getR(_midline[1][0], _midline[1][1], _midline[2][0], _midline[2][1], _midline[3][0], _midline[3][1]);
+	CircleFoot = getR(_midline[0][0], _midline[0][1], _midline[1][0], _midline[1][1], _midline[2][0], _midline[2][1]);
 	
+	//助教-未完成停车时
+	/*
 	if ( flagt == 1 ){//泊车完成，猛冲倒车，出车位
 		printf("  test1  ");
 		*cmdAcc = 1;
@@ -242,9 +253,122 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 		    *cmdGear = 1;//档位始终挂1
 			flag = 5;
 	    }
-	}
+	}*/
 
+	//Liu-未完成停车时
+	if (!*bFinished) {
+		if (Stop) {
+			*cmdSteer = -1;
+			*cmdBrake = 1.0;
+			*cmdGear = -1;
+			*cmdAcc = 0.0;
+			if (fabs(_speed) < 0.2)
+				*bFinished = true;
+		}
+		else if (backcar) {
+			float k1 = 5.605095541, k2 = 25, k3 = 4;//k2 = 24
+			if (fabs(parkdist) > 0.5)k3 = 2;
+			*cmdSteer = -k1 * angle - k2 * avgAngle / 3.14 - 1.404*(parkdist)-1.872*avgPark;
+			/*if (fabs(_lotX - X1) < 1 && fabs(_lotY - Y1) < 1) {//#1
+				k3 = 4; k2 = 25;
+				*cmdSteer = -k1 * angle - k2 * avgAngle / 3.14 - 1.404*(parkdist)-1.872*avgPark;
+			}
+			if (fabs(_lotX - X2) < 1 && fabs(_lotY - Y2) < 1) {//#2 
+				k3 = 4; k2 = 25;
+				*cmdSteer = -k1 * angle - k2 * avgAngle / 3.14 - 1.404*(parkdist)-1.872*avgPark;
+			}
+
+			if (fabs(_lotX - X3) < 1 && fabs(_lotY - Y3) < 1) {//#3
+				k3 = 4; k2 = 25;
+				*cmdSteer = -k1 * angle - k2 * avgAngle / 3.14 - 1.404*(parkdist)-1.872*avgPark;
+			}
+
+			if (fabs(_lotX - X4) < 1 && fabs(_lotY - Y4) < 1) {//#4 
+				k3 = 4; k2 = 24;
+				*cmdSteer = -k1 * angle - k2 * avgAngle / 3.14 - 1.404*(parkdist)-1.872*avgPark;
+			}
+
+			if (fabs(_lotX - X5) < 1 && fabs(_lotY - Y5) < 1) { //#5
+				k3 = 4; k2 = 25;
+				*cmdSteer = -k1 * angle - k2 * avgAngle / 3.14 - 1.404*(parkdist)-1.872*avgPark;
+			}*/
+
+			if (fabs(_speed) > k3 * distance + 5) {
+				*cmdBrake = 0.2;
+				*cmdGear = -1;
+				*cmdAcc = 0;
+			}
+			else {
+				*cmdBrake = 0.0;
+				*cmdGear = -1;
+				*cmdAcc = 1;
+				if (ass == 0 && fabs(parkdist) > 0.01 && fabs(angle) > 0.01)*cmdAcc = 0.6;
+			}
+		}
+		else if (TurnRight) {
+			*cmdGear = 1;
+			if (!backcar && !FirstStop) {
+				*cmdSteer = -0.5*fabs(atan2(haltX - _carX, haltY - _carY));
+				if (_speed < midlined) *cmdAcc = 0.2, *cmdBrake = 0;
+				else *cmdAcc = 0, *cmdBrake = 0.2;
+			}
+			if (!backcar && (FirstStop || fabs(angle) < 0.3)) {
+				float k4 = 1.0, k5 = 0.2, k6 = 0.04;
+				/*
+				if (fabs(_lotX - X1) < 1 && fabs(_lotY - Y1) < 1) k5 = 0.1; //#1
+				if (fabs(_lotX - X2) < 1 && fabs(_lotY - Y2) < 1) k4 = 1.0201; //#2 
+				if (fabs(_lotX - X3) < 1 && fabs(_lotY - Y3) < 1) k5 = 0.8998;  //#3
+				if (fabs(_lotX - X4) < 1 && fabs(_lotY - Y4) < 1) k4 = 0.2;  //#4
+				if (fabs(_lotX - X5) < 1 && fabs(_lotY - Y5) < 1) k4 = 1.05; //#5
+				*/
+				*cmdSteer = (k4*_caryaw - (_lotAngle + 0.61)) / 3.14;
+				*cmdBrake = k5 * _speed + k6 * midlined + 0.2;
+				*cmdAcc = 0;
+
+				if (_speed < 1) backcar = true;
+			}
+		}
+		else if (startLeftShift) {
+			float k7 = 1, k8 = 0.0, k9 = 4, k10 = 2.3;
+			*cmdSteer = (-k9 * atan2(_midline[20][0] - _width * k8 - 2.5, _midline[20][1])) / 3.14;
+			/*
+			if (fabs(_lotX - X1) < 1 && fabs(_lotY - Y1) < 1) {
+				k7 = 1;
+				*cmdSteer = (-k9 * atan2(_midline[20][0] - _width * k8 - 3.5, _midline[20][1])) / 3.14;
+			}
+			if (fabs(_lotX - X2) < 1 && fabs(_lotY - Y2) < 1) {
+				k7 = 1.1, k8 = 0.28;
+				*cmdSteer = (-k9 * atan2(_midline[20][0] - _width * k8 - 1.5, _midline[20][1])) / 3.14;
+			}
+			if (fabs(_lotX - X3) < 1 && fabs(_lotY - Y3) < 1) {
+				k8 = 0.002;
+				*cmdSteer = (-k9 * atan2(_midline[20][0] - _width * k8 - 2.3, _midline[20][1])) / 3.14;
+			}
+			if (fabs(_lotX - X4) < 1 && fabs(_lotY - Y4) < 1) {
+				k7 = 1.1, k8 = 0.28;
+				*cmdSteer = (-k9 * atan2(_midline[20][0] - _width * k8 - 1.779, _midline[20][1])) / 3.14;
+			}
+			if (fabs(_lotX - X5) < 1 && fabs(_lotY - Y5) < 1) {
+				k7 = 0.95, k9 = 4;
+				*cmdSteer = (-k9 * atan2(_midline[20][0] - _width * k8 - 2.3, _midline[20][1])) / 3.14;
+				*cmdAcc = 0.18;
+			}
+			*/
+			*cmdAcc = 0.2;
+			*cmdSteer = (-k9 * atan2(_midline[20][0] - _width * k8 - k10, _midline[20][1])) / 3.14;
+			*cmdGear = 2;
+			*cmdBrake = 0;
+		}
+		else{
+			printf("巡线？？");
+			*cmdAcc = 1;
+			*cmdBrake = 0;
+			*cmdSteer = (_yaw - 8 * atan2(_midline[10][0] - 1.5, _midline[10][1])) / 3.14;
+			*cmdGear = 1;
+		}
+	}
 	
+	//助教-已经完成停车时
 	/*if(*bFinished)//停车完成后，出车位跑
 	{
 		if ((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 10 ) 
@@ -277,70 +401,76 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 	    }
 	}*/
 	
+	//Liu-已经完成停车时
 	if (*bFinished) {//车尾入库，停车完成后，出车位跑
-		float k1 = 1.6;
-		if (fabs(_lotX - X3) < 1 && fabs(_lotY - Y3) < 1)  k1 = 2; //#3
-		if (fabs(_lotX - X4) < 1 && fabs(_lotY - Y4) < 1)  k1 = 2; //#4
-		if (fabs(_lotX - X5) < 1 && fabs(_lotY - Y5) < 1)  k1 = 2; //#5
+		//CircleFoot.r = ?//1#,2# -> 500;3# -> 90;4# -> 100, 5# -> 150
+		float k11 = 1.6;
+		/*
+		if (fabs(_lotX - X3) < 1 && fabs(_lotY - Y3) < 1)  k11 = 2; //#3
+		if (fabs(_lotX - X4) < 1 && fabs(_lotY - Y4) < 1)  k11 = 2; //#4
+		if (fabs(_lotX - X5) < 1 && fabs(_lotY - Y5) < 1)  k11 = 2; //#5
+		*/
+		if(CircleFoot.r < 450) k11 = 2;
 
-		*cmdSteer = (distance > 10) ? 0 : (_yaw - 8 * atan2(_midline[30][0] + k1 * _width, _midline[30][1])) / 3.14;
+		*cmdSteer = (distance > 10) ? 0 : (_yaw - 8 * atan2(_midline[30][0] + k11 * _width, _midline[30][1])) / 3.14;
 		*cmdAcc = 1;
 		*cmdBrake = 0;
 		*cmdGear = 1;
-
 	}
 	
 
 	///=======================================printf functions============================================
 	printf("== ");
-	printf("bFinished:%d ", *bFinished);//parking is finished?(only change once)
-	printf("flag:%d ", flag);
-	printf("flagt:%d ", flagt); 
-	printf("backcar:%d ", backcar);//is back car start? (only change once)
-	rintf("Stop:%d ", Stop);//parking is finished?(only change once)比bFinished置1更早一点（约6个周期）
-	printf("TurnRight:%d ", TurnRight);//入库之前的右转开始
-	printf("FirstStop:%d ", FirstStop);//右转完成，开始倒车flag
-	printf("startLeftShift:%d ", startLeftShift);//接近车位，开始向左调整flag，留出位置
-	printf("ass:%d ", ass);//是否训练车位。若车位1到5#，则ass=1；否则ass=0；
+	//printf("bFinished:%d ", *bFinished);//parking is finished?(only change once)
+	//printf("flag:%d ", flag);
+	//printf("flagt:%d ", flagt); 
+	//printf("backcar:%d ", backcar);//is back car start? (only change once)
+	//rintf("Stop:%d ", Stop);//parking is finished?(only change once)比bFinished置1更早一点（约6个周期）
+	//printf("TurnRight:%d ", TurnRight);//入库之前的右转开始
+	//printf("FirstStop:%d ", FirstStop);//右转完成，开始倒车flag
+	//printf("startLeftShift:%d ", startLeftShift);//接近车位，开始向左调整flag，留出位置
+	//printf("ass:%d ", ass);//是否训练车位。若车位1到5#，则ass=1；否则ass=0；
 
-	printf("speed:%.1f ", _speed);
-	printf("lotX:%.2f ", _lotX);
-	printf("lotY:%.2f ", _lotY);
-	printf("lotAngle:%.5f ", _lotAngle);
-	printf("carX:%.1f ", _carX);
-	printf("carY:%.1f ", _carY);
-	printf("caryaw:%.1f ", _caryaw);
-	printf("parkdist:%.1f ", parkdist);//parkdist:车辆中心点与车位方向直线的垂直距离
-	printf("dist:%.1f ", dist);
-	printf("distance:%.7f ", distance);//distance车辆中心点与车位中心点的距离
-	printf("haltX:%.1f ", haltX);//haltX,haltY应该是对于_lotX,_lotY的修正？我的理解_lotX,_lotY是目标值；haltX,haltY相当于预瞄点（应该是魔改参数最后调出来的）
-	printf("haltY:%.1f ", haltY);//如果直接用_lotX,_lotY作为预瞄点可能会有问题
-	printf("midlined:%.1f ", midlined);//车辆与预瞄点之间的距离
-	printf("angle:%.1f ", angle);//角度误差；angle = _lotAngle - _caryaw;
+	//printf("speed:%.1f ", _speed);
+	//printf("lotX:%.2f ", _lotX);
+	//printf("lotY:%.2f ", _lotY);
+	//printf("lotAngle:%.5f ", _lotAngle);
+	//printf("carX:%.1f ", _carX);
+	//printf("carY:%.1f ", _carY);
+	//printf("caryaw:%.1f ", _caryaw);
+	//printf("parkdist:%.1f ", parkdist);//parkdist:车辆中心点与车位方向直线的垂直距离
+	//printf("dist:%.1f ", dist);
+	//printf("distance:%.7f ", distance);//distance车辆中心点与车位中心点的距离
+	//printf("haltX:%.1f ", haltX);//haltX,haltY应该是对于_lotX,_lotY的修正？我的理解_lotX,_lotY是目标值；haltX,haltY相当于预瞄点（应该是魔改参数最后调出来的）
+	//printf("haltY:%.1f ", haltY);//如果直接用_lotX,_lotY作为预瞄点可能会有问题
+	//printf("midlined:%.1f ", midlined);//车辆与预瞄点之间的距离
+	//printf("angle:%.1f ", angle);//角度误差；angle = _lotAngle - _caryaw;
 
-	printf("parkDist[0]:%.1f ", parkDist[0]); //parkDist[0]到parkDist[4]保存5个parkdist（车辆中心点与车位方向直线的垂直距离）,parkDist[4]为最新
-	printf("[1]:%.1f ", parkDist[1]);
-	printf("[2]:%.1f ", parkDist[2]);
-	printf("[3]:%.1f ", parkDist[3]);
-	printf("[4]:%.1f  ", parkDist[4]);
+	//printf("parkDist[0]:%.1f ", parkDist[0]); //parkDist[0]到parkDist[4]保存5个parkdist（车辆中心点与车位方向直线的垂直距离）,parkDist[4]为最新
+	//printf("[1]:%.1f ", parkDist[1]);
+	//printf("[2]:%.1f ", parkDist[2]);
+	//printf("[3]:%.1f ", parkDist[3]);
+	//printf("[4]:%.1f  ", parkDist[4]);
 
-	printf("parkAngle[0]:%.1f ", parkAngle[0]);//parkAngle[0]到parkAngle[4]保存5个angle（角度误差）,parkAngle[4]为最新
-	printf("[1]:%.1f ", parkAngle[1]);
-	printf("[2]:%.1f ", parkAngle[2]);
-	printf("[3]:%.1f ", parkAngle[3]);
-	printf("[4]:%.1f  ", parkAngle[4]);
+	//printf("parkAngle[0]:%.1f ", parkAngle[0]);//parkAngle[0]到parkAngle[4]保存5个angle（角度误差）,parkAngle[4]为最新
+	//printf("[1]:%.1f ", parkAngle[1]);
+	//printf("[2]:%.1f ", parkAngle[2]);
+	//printf("[3]:%.1f ", parkAngle[3]);
+	//printf("[4]:%.1f  ", parkAngle[4]);
 
-	printf("avgPark:%.1f ", avgPark);//parkDist[0]到parkDist[4]的平均值
-	printf("avgAngle:%.1f ", avgAngle);//parkAngle[0]到parkAngle[4]的平均值
-	printf("state :%d ", state);//作用未知1# state全程=0
+	//printf("avgPark:%.1f ", avgPark);//parkDist[0]到parkDist[4]的平均值
+	//printf("avgAngle:%.1f ", avgAngle);//parkAngle[0]到parkAngle[4]的平均值
+	//printf("state :%d ", state);//作用未知1# state全程=0
 
-	printf("Acc:%.1f ", *cmdAcc);
-	printf("Brake:%.1f ", *cmdBrake);
-	printf("*cmdGear:%d ", *cmdGear);
-	printf("Steer:%.1f ", *cmdSteer);
+	//printf("Acc:%.1f ", *cmdAcc);
+	//printf("Brake:%.1f ", *cmdBrake);
+	//printf("*cmdGear:%d ", *cmdGear);
+	//printf("Steer:%.1f ", *cmdSteer);
 
-	printf("yaw:%.1f ", _yaw);
-	printf("isEscaping:%d ", isEscaping);
+	//printf("yaw:%.1f ", _yaw);
+	//printf("isEscaping:%d ", isEscaping);
+	printf("CircleFoot.r:%.1f ", CircleFoot.r); 
+	if(CircleFoot.r < 450) printf("CircleFoot.sign:%d ", CircleFoot.sign);
 
 	printf("\n");
 	///=======================================printf functions============================================
