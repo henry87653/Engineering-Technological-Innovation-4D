@@ -2,8 +2,9 @@
 	 Copyright (C) 2019
 	 All rights reserved
 	 file : driver_parking.cpp
-	 description :巡线二挡减少时间，成绩跑不下，巡线撞
-	 version: 1.1.3
+	 description :回退到学长bool变量Stop, TurnRight, FirstStop, startLeftShift;判断条件
+	 if (distance < sqrt(0.008)) Stop = true;// 0.09
+	 version: 1.1.4
 	 modified by Lu at  April/28/2019 16:09
 	 https://github.com/henry87653/Engineering-Technological-Innovation-4D
   ***************************************************************************/
@@ -170,7 +171,7 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 	avgPark = getMean(parkDist);
 	avgAngle = getMean(parkAngle);
 
-	if (distance < 0.09) Stop = true;// sqrt(0.008)
+	if (distance < sqrt(0.008)) Stop = true;// 0.09
 	if (distance < 63) startLeftShift = true;//sqrt(4000.0)
 	if (midlined < 20) TurnRight = true;
 	if (midlined < 5)  FirstStop = true;
@@ -256,6 +257,7 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 	//Liu-未完成停车时
 	if (!*bFinished) {
 		if (Stop) {
+			printf(" *test1* ");
 			*cmdSteer = -1;
 			*cmdBrake = 1.0;
 			*cmdGear = -1;
@@ -264,6 +266,7 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 				*bFinished = true;
 		}
 		else if (backcar) {
+			printf(" *test2* ");
 			float k1 = 5.605095541, k2 = 25, k3 = 4;//k2 = 24
 			if (fabs(parkdist) > 0.5)k3 = 2;
 			*cmdSteer = -k1 * angle - k2 * avgAngle / 3.14 - 1.404*(parkdist)-1.872*avgPark;
@@ -292,11 +295,13 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 			}*/
 
 			if (fabs(_speed) > k3 * distance + 5) {
+				printf(" *test3* ");
 				*cmdBrake = 0.2;
 				*cmdGear = -1;
 				*cmdAcc = 0;
 			}
 			else {
+				printf(" *test4* ");
 				*cmdBrake = 0.0;
 				*cmdGear = -1;
 				*cmdAcc = 1;
@@ -304,13 +309,16 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 			}
 		}
 		else if (TurnRight) {
+			printf(" *test5* ");
 			*cmdGear = 1;
 			if (!backcar && !FirstStop) {
+				printf(" *test6* ");
 				*cmdSteer = -0.5*fabs(atan2(haltX - _carX, haltY - _carY));
 				if (_speed < midlined) *cmdAcc = 0.2, *cmdBrake = 0;
 				else *cmdAcc = 0, *cmdBrake = 0.2;
 			}
 			if (!backcar && (FirstStop || fabs(angle) < 0.3)) {
+				printf(" *test7* ");
 				float k4 = 1.0, k5 = 0.2, k6 = 0.04;
 				/*
 				if (fabs(_lotX - X1) < 1 && fabs(_lotY - Y1) < 1) k5 = 0.1; //#1
@@ -327,6 +335,7 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 			}
 		}
 		else if (startLeftShift) {
+			printf(" *test8* ");
 			float k7 = 1, k8 = 0.0, k9 = 4, k10 = 2.3;
 			//*cmdSteer = (-k9 * atan2(_midline[20][0] - _width * k8 - 2.5, _midline[20][1])) / 3.14;
 			/*
@@ -358,11 +367,11 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 			*cmdBrake = 0;
 		}
 		else{
-			//printf("巡线？？");
+			printf(" *test9* ");
 			*cmdAcc = 1;
 			*cmdBrake = 0;
 			*cmdSteer = (_yaw - 8 * atan2(_midline[10][0] - 1.5, _midline[10][1])) / 3.14;
-			updateGear(cmdGear);// *cmdGear = 1;
+			*cmdGear = 1;
 		}
 	}
 	
@@ -401,6 +410,7 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 	
 	//Liu-已经完成停车时
 	if (*bFinished) {//车尾入库，停车完成后，出车位跑
+		printf(" *test10* ");
 		//CircleFoot.r = ?//1#,2# -> 500;3# -> 90;4# -> 100, 5# -> 150
 		float k11 = 1.6;
 		/*
@@ -460,15 +470,15 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 	//printf("avgAngle:%.1f ", avgAngle);//parkAngle[0]到parkAngle[4]的平均值
 	//printf("state :%d ", state);//作用未知1# state全程=0
 
-	//printf("Acc:%.1f ", *cmdAcc);
-	//printf("Brake:%.1f ", *cmdBrake);
+	printf("Acc:%.3f ", *cmdAcc);
+	printf("Brake:%.3f ", *cmdBrake);
 	//printf("*cmdGear:%d ", *cmdGear);
-	//printf("Steer:%.1f ", *cmdSteer);
+	printf("Steer:%.3f ", *cmdSteer);
 
 	//printf("yaw:%.1f ", _yaw);
 	//printf("isEscaping:%d ", isEscaping);
-	printf("CircleFoot.r:%.1f ", CircleFoot.r); 
-	if(CircleFoot.r < 450) printf("CircleFoot.sign:%d ", CircleFoot.sign);
+	//printf("CircleFoot.r:%.1f ", CircleFoot.r); 
+	//if(CircleFoot.r < 450) printf("CircleFoot.sign:%d ", CircleFoot.sign);
 
 	printf("\n");
 	///=======================================printf functions============================================
