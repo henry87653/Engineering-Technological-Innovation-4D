@@ -2,9 +2,9 @@
 	 Copyright (C) 2019
 	 All rights reserved
 	 file : driver_parking.cpp
-	 description :回退到学长bool变量Stop, TurnRight, FirstStop, startLeftShift;判断条件
-	 if (distance < sqrt(0.008)) Stop = true;// 0.09
-	 version: 1.1.4
+	 description :成绩38.94。调整test4（去掉安全倒车油门0.6），巡线时不输出；
+		1#,2# 直道成绩较好，3-5#弯道比较差
+	 version: 1.1.5
 	 modified by Lu at  April/28/2019 16:09
 	 https://github.com/henry87653/Engineering-Technological-Innovation-4D
   ***************************************************************************/
@@ -172,8 +172,8 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 	avgAngle = getMean(parkAngle);
 
 	if (distance < sqrt(0.008)) Stop = true;// 0.09
-	if (distance < 63) startLeftShift = true;//sqrt(4000.0)
-	if (midlined < 20) TurnRight = true;
+	if (distance < sqrt(4000.0)) startLeftShift = true;//63
+	if (midlined < 20) TurnRight = true;// 20
 	if (midlined < 5)  FirstStop = true;
 	
 	/*CircleSpeed = getR(_midline[startPoint][0], _midline[startPoint][1], _midline[startPoint + delta][0], _midline[startPoint + delta][1], _midline[startPoint + 2 * delta][0], _midline[startPoint + 2 * delta][1]);
@@ -181,7 +181,7 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 	CircleMiddle = getR(_midline[10][0], _midline[10][1], _midline[30][0], _midline[30][1], _midline[50][0], _midline[50][1]);
 	CircleFar = getR(_midline[70][0], _midline[70][1], _midline[90][0], _midline[90][1], _midline[110][0], _midline[110][1]);*/
 	CircleFoot = getR(_midline[0][0], _midline[0][1], _midline[1][0], _midline[1][1], _midline[2][0], _midline[2][1]);
-	
+
 	//助教-未完成停车时
 	/*
 	if ( flagt == 1 ){//泊车完成，猛冲倒车，出车位
@@ -294,7 +294,7 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 				*cmdSteer = -k1 * angle - k2 * avgAngle / 3.14 - 1.404*(parkdist)-1.872*avgPark;
 			}*/
 
-			if (fabs(_speed) > k3 * distance + 5) {
+			if (fabs(_speed) > k3 * distance + 5) {//5
 				printf(" *test3* ");
 				*cmdBrake = 0.2;
 				*cmdGear = -1;
@@ -305,11 +305,11 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 				*cmdBrake = 0.0;
 				*cmdGear = -1;
 				*cmdAcc = 1;
-				if (ass == 0 && fabs(parkdist) > 0.01 && fabs(angle) > 0.01)*cmdAcc = 0.6;
+				//if (ass == 0 && fabs(parkdist) > 0.01 && fabs(angle) > 0.01)*cmdAcc = 0.6;
 			}
 		}
 		else if (TurnRight) {
-			printf(" *test5* ");
+			//printf(" *test5* ");
 			*cmdGear = 1;
 			if (!backcar && !FirstStop) {
 				printf(" *test6* ");
@@ -428,58 +428,59 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 	
 
 	///=======================================printf functions============================================
-	printf("== ");
-	//printf("bFinished:%d ", *bFinished);//parking is finished?(only change once)
-	//printf("flag:%d ", flag);
-	//printf("flagt:%d ", flagt); 
-	//printf("backcar:%d ", backcar);//is back car start? (only change once)
-	//rintf("Stop:%d ", Stop);//parking is finished?(only change once)比bFinished置1更早一点（约6个周期）
-	//printf("TurnRight:%d ", TurnRight);//入库之前的右转开始
-	//printf("FirstStop:%d ", FirstStop);//右转完成，开始倒车flag
-	//printf("startLeftShift:%d ", startLeftShift);//接近车位，开始向左调整flag，留出位置
-	//printf("ass:%d ", ass);//是否训练车位。若车位1到5#，则ass=1；否则ass=0；
+	if (TurnRight) {
+		printf("== ");
+		//printf("bFinished:%d ", *bFinished);//parking is finished?(only change once)
+		//printf("flag:%d ", flag);
+		//printf("flagt:%d ", flagt); 
+		//printf("backcar:%d ", backcar);//is back car start? (only change once)
+		//rintf("Stop:%d ", Stop);//parking is finished?(only change once)比bFinished置1更早一点（约6个周期）
+		//printf("TurnRight:%d ", TurnRight);//入库之前的右转开始
+		//printf("FirstStop:%d ", FirstStop);//右转完成，开始倒车flag
+		//printf("startLeftShift:%d ", startLeftShift);//接近车位，开始向左调整flag，留出位置
+		//printf("ass:%d ", ass);//是否训练车位。若车位1到5#，则ass=1；否则ass=0；
 
-	//printf("speed:%.1f ", _speed);
-	//printf("lotX:%.2f ", _lotX);
-	//printf("lotY:%.2f ", _lotY);
-	//printf("lotAngle:%.5f ", _lotAngle);
-	//printf("carX:%.1f ", _carX);
-	//printf("carY:%.1f ", _carY);
-	//printf("caryaw:%.1f ", _caryaw);
-	//printf("parkdist:%.1f ", parkdist);//parkdist:车辆中心点与车位方向直线的垂直距离
-	//printf("dist:%.1f ", dist);
-	//printf("distance:%.7f ", distance);//distance车辆中心点与车位中心点的距离
-	//printf("haltX:%.1f ", haltX);//haltX,haltY应该是对于_lotX,_lotY的修正？我的理解_lotX,_lotY是目标值；haltX,haltY相当于预瞄点（应该是魔改参数最后调出来的）
-	//printf("haltY:%.1f ", haltY);//如果直接用_lotX,_lotY作为预瞄点可能会有问题
-	//printf("midlined:%.1f ", midlined);//车辆与预瞄点之间的距离
-	//printf("angle:%.1f ", angle);//角度误差；angle = _lotAngle - _caryaw;
+		//printf("speed:%.1f ", _speed);
+		//printf("lotX:%.2f ", _lotX);
+		//printf("lotY:%.2f ", _lotY);
+		//printf("lotAngle:%.5f ", _lotAngle);
+		//printf("carX:%.1f ", _carX);
+		//printf("carY:%.1f ", _carY);
+		//printf("caryaw:%.1f ", _caryaw);
+		printf("parkdist:%.3f ", parkdist);//parkdist:车辆中心点与车位方向直线的垂直距离
+		//printf("dist:%.1f ", dist);
+		printf("distance:%.3f ", distance);//distance车辆中心点与车位中心点的距离
+		//printf("haltX:%.1f ", haltX);//haltX,haltY应该是对于_lotX,_lotY的修正？我的理解_lotX,_lotY是目标值；haltX,haltY相当于预瞄点（应该是魔改参数最后调出来的）
+		//printf("haltY:%.1f ", haltY);//如果直接用_lotX,_lotY作为预瞄点可能会有问题
+		//printf("midlined:%.1f ", midlined);//车辆与预瞄点之间的距离
+		printf("angle:%.3f ", angle);//角度误差；angle = _lotAngle - _caryaw;
 
-	//printf("parkDist[0]:%.1f ", parkDist[0]); //parkDist[0]到parkDist[4]保存5个parkdist（车辆中心点与车位方向直线的垂直距离）,parkDist[4]为最新
-	//printf("[1]:%.1f ", parkDist[1]);
-	//printf("[2]:%.1f ", parkDist[2]);
-	//printf("[3]:%.1f ", parkDist[3]);
-	//printf("[4]:%.1f  ", parkDist[4]);
+		//printf("parkDist[0]:%.1f ", parkDist[0]); //parkDist[0]到parkDist[4]保存5个parkdist（车辆中心点与车位方向直线的垂直距离）,parkDist[4]为最新
+		//printf("[1]:%.1f ", parkDist[1]);
+		//printf("[2]:%.1f ", parkDist[2]);
+		//printf("[3]:%.1f ", parkDist[3]);
+		//printf("[4]:%.1f  ", parkDist[4]);
 
-	//printf("parkAngle[0]:%.1f ", parkAngle[0]);//parkAngle[0]到parkAngle[4]保存5个angle（角度误差）,parkAngle[4]为最新
-	//printf("[1]:%.1f ", parkAngle[1]);
-	//printf("[2]:%.1f ", parkAngle[2]);
-	//printf("[3]:%.1f ", parkAngle[3]);
-	//printf("[4]:%.1f  ", parkAngle[4]);
+		//printf("parkAngle[0]:%.1f ", parkAngle[0]);//parkAngle[0]到parkAngle[4]保存5个angle（角度误差）,parkAngle[4]为最新
+		//printf("[1]:%.1f ", parkAngle[1]);
+		//printf("[2]:%.1f ", parkAngle[2]);
+		//printf("[3]:%.1f ", parkAngle[3]);
+		//printf("[4]:%.1f  ", parkAngle[4]);
 
-	//printf("avgPark:%.1f ", avgPark);//parkDist[0]到parkDist[4]的平均值
-	//printf("avgAngle:%.1f ", avgAngle);//parkAngle[0]到parkAngle[4]的平均值
-	//printf("state :%d ", state);//作用未知1# state全程=0
+		//printf("avgPark:%.1f ", avgPark);//parkDist[0]到parkDist[4]的平均值
+		//printf("avgAngle:%.1f ", avgAngle);//parkAngle[0]到parkAngle[4]的平均值
+		//printf("state :%d ", state);//作用未知1# state全程=0
 
-	printf("Acc:%.3f ", *cmdAcc);
-	printf("Brake:%.3f ", *cmdBrake);
-	//printf("*cmdGear:%d ", *cmdGear);
-	printf("Steer:%.3f ", *cmdSteer);
+		/*printf("Acc:%.3f ", *cmdAcc);
+		printf("Brake:%.3f ", *cmdBrake);
+		printf("*cmdGear:%d ", *cmdGear);
+		printf("Steer:%.3f ", *cmdSteer);*/
 
-	//printf("yaw:%.1f ", _yaw);
-	//printf("isEscaping:%d ", isEscaping);
-	//printf("CircleFoot.r:%.1f ", CircleFoot.r); 
-	//if(CircleFoot.r < 450) printf("CircleFoot.sign:%d ", CircleFoot.sign);
-
+		//printf("yaw:%.1f ", _yaw);
+		//printf("isEscaping:%d ", isEscaping);
+		//printf("CircleFoot.r:%.1f ", CircleFoot.r); 
+		//if(CircleFoot.r < 450) printf("CircleFoot.sign:%d ", CircleFoot.sign);
+	}
 	printf("\n");
 	///=======================================printf functions============================================
 
