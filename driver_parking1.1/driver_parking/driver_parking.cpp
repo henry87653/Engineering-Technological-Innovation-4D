@@ -2,10 +2,8 @@
 	 Copyright (C) 2019
 	 All rights reserved
 	 file : driver_parking.cpp
-	 description :学长代码，删除赛道判断；总成绩42.484
-		 改进方向：车位必然在道路左边，但是未必是左转弯路段，可能有右转路段
-		 使用车尾入库。用相切圆的方法，考虑道路半径
-	 version: 1.1.1
+	 description :出车位二挡减少时间？
+	 version: 1.1.2
 	 modified by Lu at  April/28/2019 16:09
 	 https://github.com/henry87653/Engineering-Technological-Innovation-4D
   ***************************************************************************/
@@ -72,7 +70,7 @@ static int flag = 0;//类型判断，1-5;5：巡线，4：靠右，3：转弯进
 static float k,b,dist;
 static int flagt = 0;
 
-int topGear = 6;
+int topGear = 2;
 
 //float distance = 0;//车辆与车位中心点距离
 bool isEscaping = false;
@@ -330,7 +328,7 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 		}
 		else if (startLeftShift) {
 			float k7 = 1, k8 = 0.0, k9 = 4, k10 = 2.3;
-			*cmdSteer = (-k9 * atan2(_midline[20][0] - _width * k8 - 2.5, _midline[20][1])) / 3.14;
+			//*cmdSteer = (-k9 * atan2(_midline[20][0] - _width * k8 - 2.5, _midline[20][1])) / 3.14;
 			/*
 			if (fabs(_lotX - X1) < 1 && fabs(_lotY - Y1) < 1) {
 				k7 = 1;
@@ -360,7 +358,7 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 			*cmdBrake = 0;
 		}
 		else{
-			printf("巡线？？");
+			//printf("巡线？？");
 			*cmdAcc = 1;
 			*cmdBrake = 0;
 			*cmdSteer = (_yaw - 8 * atan2(_midline[10][0] - 1.5, _midline[10][1])) / 3.14;
@@ -415,7 +413,7 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 		*cmdSteer = (distance > 10) ? 0 : (_yaw - 8 * atan2(_midline[30][0] + k11 * _width, _midline[30][1])) / 3.14;
 		*cmdAcc = 1;
 		*cmdBrake = 0;
-		*cmdGear = 1;
+		updateGear(cmdGear);// *cmdGear = 1;
 	}
 	
 
