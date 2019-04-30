@@ -2,8 +2,8 @@
 	 Copyright (C) 2019
 	 All rights reserved
 	 file : driver_parking.cpp
-	 description :出车位二挡减少时间？
-	 version: 1.1.2
+	 description :巡线二挡减少时间，成绩跑不下，巡线撞
+	 version: 1.1.3
 	 modified by Lu at  April/28/2019 16:09
 	 https://github.com/henry87653/Engineering-Technological-Innovation-4D
   ***************************************************************************/
@@ -362,7 +362,7 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 			*cmdAcc = 1;
 			*cmdBrake = 0;
 			*cmdSteer = (_yaw - 8 * atan2(_midline[10][0] - 1.5, _midline[10][1])) / 3.14;
-			*cmdGear = 1;
+			updateGear(cmdGear);// *cmdGear = 1;
 		}
 	}
 	
