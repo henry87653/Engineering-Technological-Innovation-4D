@@ -3,8 +3,8 @@
 	All rights reserved
 	file : driver_parking.cpp
 	description :
-	version: 1.2.0
-	modified by Lu at  May/5/2019 10:28
+	version: 1.2.1
+	modified by Lu at May/5/2019 10:28
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
  ***************************************************************************/
 
@@ -180,7 +180,7 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 			if (fabs(vertParkdist) > 0.5)k3 = 2;
 			*cmdSteer = -k1 * angle - k2 * avgAngle / 3.14 - 1.404*(vertParkdist)-1.872*avgPark;
 			if (fabs(_speed) > k3 * distance + 5) {//5
-				printf(" *test3* ");
+				//printf(" *test3* ");
 				*cmdBrake = 0.2;
 				*cmdGear = -1;
 				*cmdAcc = 0;
@@ -212,7 +212,7 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 			}
 		}
 		else if (isStartLeftShift) {
-			printf(" *test8* ");
+			//printf(" *test8* ");
 			float k7 = 1, k8 = 0.0, k9 = 4, k10 = 2.3;//3.5、1.5???ldx
 			*cmdAcc = 0.2;
 			*cmdSteer = (-k9 * atan2(_midline[20][0] - _width * k8 - k10, _midline[20][1])) / 3.14;
@@ -220,7 +220,7 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 			*cmdBrake = 0;
 		}
 		else {
-			printf(" *test9* ");
+			//printf(" *test9* ");
 			*cmdAcc = 1;
 			*cmdBrake = 0;
 			*cmdSteer = (_yaw - 8 * atan2(_midline[10][0] - 1.5, _midline[10][1])) / 3.14;
@@ -230,7 +230,7 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 
 	//已经完成停车时
 	if (*bFinished) {//车尾入库，停车完成后，出车位跑
-		printf(" *test10* ");
+		//printf(" *test10* ");
 		float k11 = 1.6;
 		if (CircleFoot.r < 450) k11 = 2;
 
@@ -295,7 +295,7 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 		//printf("CircleFoot.r:%.1f ", CircleFoot.r); 
 		//if(CircleFoot.r < 450) printf("CircleFoot.sign:%d ", CircleFoot.sign);
 	}
-	printf("\n");
+	//printf("\n");
 	///=======================================printf functions============================================
 
 	*cmdAcc = constrain(0, 1, *cmdAcc);
