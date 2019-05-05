@@ -288,6 +288,7 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 		else if (isBackOff) {
 			printf(" *test2* ");
 <<<<<<< HEAD
+<<<<<<< HEAD
 			float k1 = 5.6051, k2 = 25, k3 = 4;//k2 = 24;;5.605095541
 			/*
 			if (89 < CircleFoot.r && CircleFoot.r < 91) {
@@ -300,6 +301,9 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 				k1 = 5.605095541; k2 = 25; k3 = 4;
 			}
 			*/
+=======
+			float k1 = 5.605095541, k2 = 25, k3 = 4;//k2 = 24
+>>>>>>> parent of 13b5d4c... 1.1.7
 =======
 			float k1 = 5.605095541, k2 = 25, k3 = 4;//k2 = 24
 >>>>>>> parent of 13b5d4c... 1.1.7
