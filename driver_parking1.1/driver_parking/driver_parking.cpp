@@ -1,10 +1,9 @@
-<<<<<<< HEAD
-﻿/***************************************************************************
+/***************************************************************************
 	Copyright (C) 2019
 	All rights reserved
 	file : driver_parking.cpp
-	description :赛道判断：CircleFoot.r（隐晦的）
-	version: 1.1.7
+	description :
+	version: 1.2.0
 	modified by Lu at  May/5/2019 10:28
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
  ***************************************************************************/
@@ -14,24 +13,6 @@
 
 	  DO NOT MODIFY CODES BELOW!
  */
-=======
-﻿ /***************************************************************************
-	 Copyright (C) 2019
-	 All rights reserved
-	 file : driver_parking.cpp
-	 description :改函数名字,变量名字，不让你看出来这是Liu的
-		改进：（隐晦的）赛道判断：CircleFoot.r
-	 version: 1.1.6
-	 modified by Lu at  May/5/2019 10:28
-	 https://github.com/henry87653/Engineering-Technological-Innovation-4D
-  ***************************************************************************/
-
-/*
-     WARNING !
-    
-	 DO NOT MODIFY CODES BELOW!
-*/
->>>>>>> parent of 13b5d4c... 1.1.7
 
 #ifdef _WIN32
 #include <windows.h>
@@ -85,7 +66,7 @@ static float _yaw, _yawrate, _speed, _acc, _width, _rpm, _lotX, _lotY, _lotAngle
 static int _gearbox;
 static bool _bFrontIn;
 
-static int flag = 0;//类型判断，1-5;5：巡线，4：靠右，3：转弯进车位，2：朝向与车位几乎一致
+static int flag = 0;
 static float k, b, dist;
 static int flagt = 0;
 
@@ -94,14 +75,8 @@ int topGear = 2;
 //float distance = 0;//车辆与车位中心点距离
 bool isEscaping = false;
 
-static float targetX, targetY, targetDistance, vertParkdist, distance, angle;
+static float rightTargetX, rightTargetY, rightTargetDistance, vertParkdist, distance, angle;
 /***********************变量解释*************************
-parkdist//parkdist:车辆中心点与车位方向直线的垂直距离
-distance//distance车辆中心点与车位中心点的距离
-haltX//haltX,haltY应该是对于_lotX,_lotY的修正？我的理解_lotX,_lotY是目标值；haltX,haltY相当于预瞄点（应该是魔改参数最后调出来的）
-haltY//如果直接用_lotX,_lotY作为预瞄点可能会有问题
-midlined//车辆与预瞄点之间的距离
-angle//角度误差；angle = _lotAngle - _caryaw;
 ***********************变量解释*************************/
 
 static float parkDist[5], avgPark, parkAngle[5], avgAngle;
@@ -111,24 +86,14 @@ parkAngle[0]//parkAngle[0]到parkAngle[4]保存5个angle（角度误差）,parkA
 avgPark//parkDist[0]到parkDist[4]的平均值
 avgAngle//parkAngle[0]到parkAngle[4]的平均值
 */
-static int state = 0
+static int state = 0;
 static bool isBackOff = false;//is back car start? (only change once)
 static bool isStop = false, isTurnRight = false, isFirstStop = false, isStartLeftShift = false;
 /*
-Stop//parking is finished?(only change once)比bFinished置1更早一点（约6个周期）
-TurnRight//入库之前的右转开始
-FirstStop//右转完成，开始倒车flag
-startLeftShift);//接近车位，开始向左调整flag，留出位置
-*/
-//int ass = 0; //是否训练车位。若车位1到5#，则ass=1；否则ass=0；
-
-/*
-float
-X1 = 168.36, Y1 = 138.54,
-X2 = 149.51, Y2 = 138.57,
-X3 = 31.55, Y3 = 183.43,
-X4 = 29.49, Y4 = 346.81,
-X5 = 44.61, Y5 = 397.07;
+isStop//parking is finished?(only change once)比bFinished置1更早一点（约6个周期）
+isTurnRight//入库之前的右转开始
+isFirstStop//右转完成，开始倒车flag
+isStartLeftShift//接近车位，开始向左调整flag，留出位置
 */
 
 //引入辅助类，函数
@@ -141,7 +106,7 @@ typedef struct Circle
 circle getR(float x1, float y1, float x2, float y2, float x3, float y3);
 void shiftForward(float arr[], float value);
 float getAverage(float arr[]);
-//circle CircleSpeed, CircleNear, CircleMiddle, CircleFar, CircleFoot;
+
 circle CircleFoot;
 
 static void userDriverGetParam(float lotX, float lotY, float lotAngle, bool bFrontIn, float carX, float carY, float caryaw, float midline[200][2], float yaw, float yawrate, float speed, float acc, float width, int gearbox, float rpm) {
@@ -178,9 +143,9 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 		dist = abs(k*_carX - _carY + b) / sqrt(k*k + 1);// k*_carX - _carY是车辆沿着车位方向Y截矩的相反数；abs（）/sqrt(k*k + 1) = * cos(_lotAngle)
 	}
 	distance = sqrt((_carX - _lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY));
-	targetX = _lotX + 10.8*cos(_lotAngle + 0.15);
-	targetY = _lotY + 10.8*sin(_lotAngle + 0.15);
-	targetDistance = sqrt((_carX - targetX) * (_carX - targetX) + (_carY - targetY) * (_carY - targetY));
+	rightTargetX = _lotX + 10.8*cos(_lotAngle + 0.15);
+	rightTargetY = _lotY + 10.8*sin(_lotAngle + 0.15);
+	rightTargetDistance = sqrt((_carX - rightTargetX) * (_carX - rightTargetX) + (_carY - rightTargetY) * (_carY - rightTargetY));
 	vertParkdist = (tan(_lotAngle)*(_carX - _lotX) - (_carY - _lotY)) / (sqrt(tan(_lotAngle)*tan(_lotAngle) + 1));
 	if (cos(_lotAngle) >= 0) vertParkdist = -vertParkdist;
 	angle = _lotAngle - _caryaw;
@@ -193,91 +158,15 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 
 	if (distance < sqrt(0.008)) isStop = true;// 0.09
 	if (distance < sqrt(4000.0)) isStartLeftShift = true;//63
-	if (targetDistance < 20) isTurnRight = true;// 20
-	if (targetDistance < 5)  isFirstStop = true;
+	if (rightTargetDistance < 20) isTurnRight = true;// 20
+	if (rightTargetDistance < 5)  isFirstStop = true;
 
-	/*CircleSpeed = getR(_midline[startPoint][0], _midline[startPoint][1], _midline[startPoint + delta][0], _midline[startPoint + delta][1], _midline[startPoint + 2 * delta][0], _midline[startPoint + 2 * delta][1]);
-	CircleNear = getR(_midline[10][0], _midline[10][1], _midline[20][0], _midline[20][1], _midline[30][0], _midline[30][1]);
-	CircleMiddle = getR(_midline[10][0], _midline[10][1], _midline[30][0], _midline[30][1], _midline[50][0], _midline[50][1]);
-	CircleFar = getR(_midline[70][0], _midline[70][1], _midline[90][0], _midline[90][1], _midline[110][0], _midline[110][1]);*/
 	CircleFoot = getR(_midline[0][0], _midline[0][1], _midline[1][0], _midline[1][1], _midline[2][0], _midline[2][1]);
 
-	//助教-未完成停车时
-	/*
-	if ( flagt == 1 ){//泊车完成，猛冲倒车，出车位
-		printf("  test1  ");
-		*cmdAcc = 1;
-		*cmdBrake = 0;
-		*cmdGear = -1;
-		*cmdSteer = (_yaw -atan2( _midline[10][0]+_width/3,_midline[10][1]))/ PI;//ldx:we can modify?
-		//if (distance > 12) flagt = 0;
-	}else
-	{
-		if ((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 0.5 )
-		{
-			printf("  test2  ");
-			//用车速判断是否完成泊车//0~0.5
-			*cmdSteer = 20*(_lotAngle -_caryaw + PI)/ PI;//ldx:we can modify? eg 15 *  // + PI
-			if(*cmdSteer > 1)
-				*cmdSteer = 1;
-			if( _speed < 0.01){
-				*bFinished = true;
-				flagt = 1;//泊车完成标志flagt = 1
-			}
-			else
-				{*cmdBrake = 0.1;*cmdGear = 1;*cmdAcc = 0;}
-			flag = 1;
-		}
-		else if( ((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 10)&& ( flagt ==2 ))
-		{
-			printf("  test3  ");
-			//0.5~10
-			//接近停车位时，控制车的朝向与车位一致，速度控制在2
-			//*cmdSteer = 0;
-			*cmdSteer = 5*(_lotAngle -_caryaw + PI)/ PI;//ldx:we can modify? eg 15 *
-			if( _speed > 2 ){*cmdBrake = 0.1;*cmdGear = 1;*cmdAcc = 0;}
-			else if(_speed >0.07){*cmdBrake = 0;*cmdGear = 1;*cmdAcc = 0.1;}
-			else{*bFinished = true;flagt=1; }//ldx: *bFinished = true 明显有问题，要注释掉?
-			flag = 2;
-		}
-		else if (((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 500 && dist <7.2)&&(flagt!=2))
-		{
-			printf("  test4  ");
-			//
-			//较接近停车位时，给一个大的转向，速度控制在10
-			*cmdSteer = 1;
-			if( _speed > 10 ){*cmdBrake = 0.2;*cmdGear = 1;*cmdAcc = 0;}
-			else{*cmdBrake = 0;*cmdGear = 1;*cmdAcc = 0.1;}
-			if (fabs(fabs(_caryaw)-fabs(_lotAngle))<0.015){
-				flagt = 2;
-			}
-			flag = 3;
-		}
-		else if ((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 5000)
-		{
-			printf("  test5  ");
-			//到一定范围时，将车子调整至道路右侧，增加转弯半径，速度控制在15
-			*cmdSteer = (_yaw -atan2( _midline[10][0]+_width/3,_midline[10][1]))/ PI;
-			if( _speed > 15 ){*cmdBrake = 0.2;*cmdGear = 1;*cmdAcc = 0;}
-			else{*cmdBrake = 0;*cmdGear = 1;*cmdAcc = 0.1;}
-			flag = 4;
-		}
-		else
-		{
-			printf("  test6  ");
-			//其它路段按巡线方式行驶
-			*cmdAcc = 1;//油门给100%
-			*cmdBrake = 0;//无刹车
-			*cmdSteer = (_yaw -8*atan2( _midline[30][0],_midline[30][1]))/ PI;//设定舵机方向//ldx: we can modify? ex. midline[10]
-			*cmdGear = 1;//档位始终挂1
-			flag = 5;
-		}
-	}*/
-
-	//Liu-未完成停车时
+	//未完成停车时
 	if (!*bFinished) {
 		if (isStop) {
-			printf(" *test1* ");
+			//printf(" *test1* ");
 			*cmdSteer = -1;
 			*cmdBrake = 1.0;
 			*cmdGear = -1;
@@ -286,53 +175,10 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 				*bFinished = true;
 		}
 		else if (isBackOff) {
-			printf(" *test2* ");
-<<<<<<< HEAD
-<<<<<<< HEAD
-			float k1 = 5.6051, k2 = 25, k3 = 4;//k2 = 24;;5.605095541
-			/*
-			if (89 < CircleFoot.r && CircleFoot.r < 91) {
-				k1 = 5.605095541; k2 = 25; k3 = 4;
-			}
-			else if (99 < CircleFoot.r && CircleFoot.r < 101) {
-				k1 = 5.605095541; k2 = 24; k3 = 4;
-			}
-			else if (149 < CircleFoot.r && CircleFoot.r < 150) {
-				k1 = 5.605095541; k2 = 25; k3 = 4;
-			}
-			*/
-=======
-			float k1 = 5.605095541, k2 = 25, k3 = 4;//k2 = 24
->>>>>>> parent of 13b5d4c... 1.1.7
-=======
-			float k1 = 5.605095541, k2 = 25, k3 = 4;//k2 = 24
->>>>>>> parent of 13b5d4c... 1.1.7
+			//printf(" *test2* ");
+			float k1 = 5.61, k2 = 25, k3 = 4;
 			if (fabs(vertParkdist) > 0.5)k3 = 2;
 			*cmdSteer = -k1 * angle - k2 * avgAngle / 3.14 - 1.404*(vertParkdist)-1.872*avgPark;
-			/*if (fabs(_lotX - X1) < 1 && fabs(_lotY - Y1) < 1) {//#1
-				k3 = 4; k2 = 25;
-				*cmdSteer = -k1 * angle - k2 * avgAngle / 3.14 - 1.404*(parkdist)-1.872*avgPark;
-			}
-			if (fabs(_lotX - X2) < 1 && fabs(_lotY - Y2) < 1) {//#2
-				k3 = 4; k2 = 25;
-				*cmdSteer = -k1 * angle - k2 * avgAngle / 3.14 - 1.404*(parkdist)-1.872*avgPark;
-			}
-
-			if (fabs(_lotX - X3) < 1 && fabs(_lotY - Y3) < 1) {//#3
-				k3 = 4; k2 = 25;
-				*cmdSteer = -k1 * angle - k2 * avgAngle / 3.14 - 1.404*(parkdist)-1.872*avgPark;
-			}
-
-			if (fabs(_lotX - X4) < 1 && fabs(_lotY - Y4) < 1) {//#4
-				k3 = 4; k2 = 24;
-				*cmdSteer = -k1 * angle - k2 * avgAngle / 3.14 - 1.404*(parkdist)-1.872*avgPark;
-			}
-
-			if (fabs(_lotX - X5) < 1 && fabs(_lotY - Y5) < 1) { //#5
-				k3 = 4; k2 = 25;
-				*cmdSteer = -k1 * angle - k2 * avgAngle / 3.14 - 1.404*(parkdist)-1.872*avgPark;
-			}*/
-
 			if (fabs(_speed) > k3 * distance + 5) {//5
 				printf(" *test3* ");
 				*cmdBrake = 0.2;
@@ -340,34 +186,26 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 				*cmdAcc = 0;
 			}
 			else {
-				printf(" *test4* ");
+				//printf(" *test4* ");
 				*cmdBrake = 0.0;
 				*cmdGear = -1;
 				*cmdAcc = 1;
-				//if (ass == 0 && fabs(parkdist) > 0.01 && fabs(angle) > 0.01)*cmdAcc = 0.6;
 			}
 		}
 		else if (isTurnRight) {
 			//printf(" *test5* ");
 			*cmdGear = 1;
 			if (!isBackOff && !isFirstStop) {
-				printf(" *test6* ");
-				*cmdSteer = -0.5*fabs(atan2(targetX - _carX, targetY - _carY));
-				if (_speed < targetDistance) *cmdAcc = 0.2, *cmdBrake = 0;
+				//printf(" *test6* ");
+				*cmdSteer = -0.5*fabs(atan2(rightTargetX - _carX, rightTargetY - _carY));
+				if (_speed < rightTargetDistance) *cmdAcc = 0.2, *cmdBrake = 0;
 				else *cmdAcc = 0, *cmdBrake = 0.2;
 			}
 			if (!isBackOff && (isFirstStop || fabs(angle) < 0.3)) {
 				printf(" *test7* ");
-				float k4 = 1.0, k5 = 0.2, k6 = 0.04;
-				/*
-				if (fabs(_lotX - X1) < 1 && fabs(_lotY - Y1) < 1) k5 = 0.1; //#1
-				if (fabs(_lotX - X2) < 1 && fabs(_lotY - Y2) < 1) k4 = 1.0201; //#2
-				if (fabs(_lotX - X3) < 1 && fabs(_lotY - Y3) < 1) k5 = 0.8998;  //#3
-				if (fabs(_lotX - X4) < 1 && fabs(_lotY - Y4) < 1) k4 = 0.2;  //#4
-				if (fabs(_lotX - X5) < 1 && fabs(_lotY - Y5) < 1) k4 = 1.05; //#5
-				*/
+				float k4 = 1.0, k5 = 0.2, k6 = 0.04;//modified
 				*cmdSteer = (k4*_caryaw - (_lotAngle + 0.61)) / 3.14;
-				*cmdBrake = k5 * _speed + k6 * targetDistance + 0.2;
+				*cmdBrake = k5 * _speed + k6 * rightTargetDistance + 0.2;
 				*cmdAcc = 0;
 
 				if (_speed < 1) isBackOff = true;
@@ -375,31 +213,7 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 		}
 		else if (isStartLeftShift) {
 			printf(" *test8* ");
-			float k7 = 1, k8 = 0.0, k9 = 4, k10 = 2.3;
-			//*cmdSteer = (-k9 * atan2(_midline[20][0] - _width * k8 - 2.5, _midline[20][1])) / 3.14;
-			/*
-			if (fabs(_lotX - X1) < 1 && fabs(_lotY - Y1) < 1) {
-				k7 = 1;
-				*cmdSteer = (-k9 * atan2(_midline[20][0] - _width * k8 - 3.5, _midline[20][1])) / 3.14;
-			}
-			if (fabs(_lotX - X2) < 1 && fabs(_lotY - Y2) < 1) {
-				k7 = 1.1, k8 = 0.28;
-				*cmdSteer = (-k9 * atan2(_midline[20][0] - _width * k8 - 1.5, _midline[20][1])) / 3.14;
-			}
-			if (fabs(_lotX - X3) < 1 && fabs(_lotY - Y3) < 1) {
-				k8 = 0.002;
-				*cmdSteer = (-k9 * atan2(_midline[20][0] - _width * k8 - 2.3, _midline[20][1])) / 3.14;
-			}
-			if (fabs(_lotX - X4) < 1 && fabs(_lotY - Y4) < 1) {
-				k7 = 1.1, k8 = 0.28;
-				*cmdSteer = (-k9 * atan2(_midline[20][0] - _width * k8 - 1.779, _midline[20][1])) / 3.14;
-			}
-			if (fabs(_lotX - X5) < 1 && fabs(_lotY - Y5) < 1) {
-				k7 = 0.95, k9 = 4;
-				*cmdSteer = (-k9 * atan2(_midline[20][0] - _width * k8 - 2.3, _midline[20][1])) / 3.14;
-				*cmdAcc = 0.18;
-			}
-			*/
+			float k7 = 1, k8 = 0.0, k9 = 4, k10 = 2.3;//3.5、1.5???ldx
 			*cmdAcc = 0.2;
 			*cmdSteer = (-k9 * atan2(_midline[20][0] - _width * k8 - k10, _midline[20][1])) / 3.14;
 			*cmdGear = 2;
@@ -414,49 +228,10 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 		}
 	}
 
-	//助教-已经完成停车时
-	/*if(*bFinished)//停车完成后，出车位跑
-	{
-		if ((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 10 )
-		{
-			printf("  test7  ");
-			//接近停车位时，控制车的朝向与车位一致，速度控制在2
-			*cmdSteer = -20*(_lotAngle -_caryaw)/ PI;
-			if(*cmdSteer > 1)
-				*cmdSteer = 1;
-			if( _speed > 2 ){*cmdBrake = 0.1;*cmdGear = -1;*cmdAcc = 0;}
-			else{*cmdBrake = 0;*cmdGear = -1;*cmdAcc = 0.1;}
-		}
-		else if ((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 500 && dist <7.2 && !isEscaping )
-		{
-			printf("  test8  ");
-			//较接近停车位时，给一个大的转向，速度控制在10
-			*cmdSteer = 1;
-			if( _speed > 10 ){*cmdBrake = 0.2;*cmdGear = -1;*cmdAcc = 0;}
-			else{*cmdBrake = 0;*cmdGear = -1;*cmdAcc = 0.1;}
-			if (fabs(_yaw) < 0.8) isEscaping = true;
-		}
-		else
-		{
-			printf("  test9  ");
-			//其它路段按巡线方式行驶
-			*cmdAcc = 1;//油门给100%
-			*cmdBrake = 0;//无刹车
-			*cmdSteer = (_yaw -8*atan2( _midline[30][0],_midline[30][1]))/ PI;//设定舵机方向
-			updateGear(cmdGear); //*cmdGear = 1;//档位始终挂1
-		}
-	}*/
-
-	//Liu-已经完成停车时
+	//已经完成停车时
 	if (*bFinished) {//车尾入库，停车完成后，出车位跑
 		printf(" *test10* ");
-		//CircleFoot.r = ?//1#,2# -> 500;3# -> 90;4# -> 100, 5# -> 150
 		float k11 = 1.6;
-		/*
-		if (fabs(_lotX - X3) < 1 && fabs(_lotY - Y3) < 1)  k11 = 2; //#3
-		if (fabs(_lotX - X4) < 1 && fabs(_lotY - Y4) < 1)  k11 = 2; //#4
-		if (fabs(_lotX - X5) < 1 && fabs(_lotY - Y5) < 1)  k11 = 2; //#5
-		*/
 		if (CircleFoot.r < 450) k11 = 2;
 
 		*cmdSteer = (distance > 10) ? 0 : (_yaw - 8 * atan2(_midline[30][0] + k11 * _width, _midline[30][1])) / 3.14;
@@ -468,7 +243,7 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 
 	///=======================================printf functions============================================
 	if (isTurnRight) {
-		printf("== ");
+		//printf("== ");
 		//printf("bFinished:%d ", *bFinished);//parking is finished?(only change once)
 		//printf("flag:%d ", flag);
 		//printf("flagt:%d ", flagt); 
@@ -486,13 +261,13 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 		//printf("carX:%.1f ", _carX);
 		//printf("carY:%.1f ", _carY);
 		//printf("caryaw:%.1f ", _caryaw);
-		printf("parkdist:%.3f ", vertParkdist);//parkdist:车辆中心点与车位方向直线的垂直距离
+		//printf("parkdist:%.3f ", vertParkdist);//parkdist:车辆中心点与车位方向直线的垂直距离
 		//printf("dist:%.1f ", dist);
-		printf("distance:%.3f ", distance);//distance车辆中心点与车位中心点的距离
+		//printf("distance:%.3f ", distance);//distance车辆中心点与车位中心点的距离
 		//printf("haltX:%.1f ", haltX);//haltX,haltY应该是对于_lotX,_lotY的修正？我的理解_lotX,_lotY是目标值；haltX,haltY相当于预瞄点（应该是魔改参数最后调出来的）
 		//printf("haltY:%.1f ", haltY);//如果直接用_lotX,_lotY作为预瞄点可能会有问题
 		//printf("midlined:%.1f ", midlined);//车辆与预瞄点之间的距离
-		printf("angle:%.3f ", angle);//角度误差；angle = _lotAngle - _caryaw;
+		//printf("angle:%.3f ", angle);//角度误差；angle = _lotAngle - _caryaw;
 
 		//printf("parkDist[0]:%.1f ", parkDist[0]); //parkDist[0]到parkDist[4]保存5个parkdist（车辆中心点与车位方向直线的垂直距离）,parkDist[4]为最新
 		//printf("[1]:%.1f ", parkDist[1]);
@@ -510,10 +285,10 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 		//printf("avgAngle:%.1f ", avgAngle);//parkAngle[0]到parkAngle[4]的平均值
 		//printf("state :%d ", state);//作用未知1# state全程=0
 
-		printf("Acc:%.3f ", *cmdAcc);
-		printf("Brake:%.3f ", *cmdBrake);
-		printf("*cmdGear:%d ", *cmdGear);
-		printf("Steer:%.3f ", *cmdSteer);
+		//printf("Acc:%.3f ", *cmdAcc);
+		//printf("Brake:%.3f ", *cmdBrake);
+		//printf("*cmdGear:%d ", *cmdGear);
+		//printf("Steer:%.3f ", *cmdSteer);
 
 		//printf("yaw:%.1f ", _yaw);
 		//printf("isEscaping:%d ", isEscaping);
@@ -528,7 +303,7 @@ static void userDriverSetParam(bool* bFinished, float* cmdAcc, float* cmdBrake, 
 	*cmdSteer = constrain(-1, 1, *cmdSteer);
 }
 
-///=================helping functions from TA no need to modify============================
+///=================helping functions no need to modify============================
 void updateGear(int *cmdGear)
 {
 	if (_gearbox == 1)
@@ -661,4 +436,4 @@ float getAverage(float arr[]) {
 		sum = sum + arr[i];
 	return sum / 5;
 }
-///=================helping functions from TA no need to modify============================
+///=================helping functions no need to modify============================
