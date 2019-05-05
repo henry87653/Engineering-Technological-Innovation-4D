@@ -3,7 +3,7 @@
 	All rights reserved
 	file : driver_parking.cpp
 	description :赛道判断：CircleFoot.r（隐晦的）
-	version: 1.1.7
+	version: 1.1.9（from1.1.7）
 	modified by Lu at  May/5/2019 10:28
 	https://github.com/henry87653/Engineering-Technological-Innovation-4D
  ***************************************************************************/
