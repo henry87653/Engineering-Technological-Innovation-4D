@@ -2,9 +2,8 @@
 	 Copyright (C) 2019
 	 All rights reserved
 	 file : driver_parking.cpp
-	 description :改函数名字,变量名字，不让你看出来这是Liu的
-		改进：（隐晦的）赛道判断：CircleFoot.r
-	 version: 1.1.6
+	 description :赛道判断：CircleFoot.r（隐晦的）
+	 version: 1.1.7
 	 modified by Lu at  May/5/2019 10:28
 	 https://github.com/henry87653/Engineering-Technological-Innovation-4D
   ***************************************************************************/
@@ -93,7 +92,7 @@ parkAngle[0]//parkAngle[0]到parkAngle[4]保存5个angle（角度误差）,parkA
 avgPark//parkDist[0]到parkDist[4]的平均值
 avgAngle//parkAngle[0]到parkAngle[4]的平均值
 */
-static int state = 0
+static int state = 0;
 static bool isBackOff = false;//is back car start? (only change once)
 static bool isStop = false, isTurnRight = false, isFirstStop = false, isStartLeftShift = false;
 /*
@@ -269,7 +268,18 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 		}
 		else if (isBackOff) {
 			printf(" *test2* ");
-			float k1 = 5.605095541, k2 = 25, k3 = 4;//k2 = 24
+			float k1 = 5.61, k2 = 25, k3 = 4;//k2 = 24;;5.605095541
+			/*
+			if (89 < CircleFoot.r && CircleFoot.r < 91) {
+				k1 = 5.605095541; k2 = 25; k3 = 4;
+			}
+			else if (99 < CircleFoot.r && CircleFoot.r < 101) {
+				k1 = 5.605095541; k2 = 24; k3 = 4;
+			}
+			else if (149 < CircleFoot.r && CircleFoot.r < 150) {
+				k1 = 5.605095541; k2 = 25; k3 = 4;
+			}
+			*/
 			if (fabs(vertParkdist) > 0.5)k3 = 2;
 			*cmdSteer = -k1 * angle - k2 * avgAngle / 3.14 - 1.404*(vertParkdist)-1.872*avgPark;
 			/*if (fabs(_lotX - X1) < 1 && fabs(_lotY - Y1) < 1) {//#1
@@ -321,7 +331,18 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 			}
 			if (!isBackOff && (isFirstStop || fabs(angle) < 0.3)) {
 				printf(" *test7* ");
-				float k4 = 1.0, k5 = 0.2, k6 = 0.04;
+				float k4 = 1.0, k5 = 0.2, k6 = 0.04;//modified
+				/*
+				if (89 < CircleFoot.r && CircleFoot.r < 91) {
+					k4 = 1.0; k5 = 0.8998; k6 = 0.04;
+				}
+				else if (99 < CircleFoot.r && CircleFoot.r < 101) {
+					k4 = 0.2; k5 = 0.2; k6 = 0.04;
+				}
+				else if (149 < CircleFoot.r && CircleFoot.r < 150) {
+					k4 = 1.05; k5 = 0.2; k6 = 0.04;
+				}
+				*/
 				/*
 				if (fabs(_lotX - X1) < 1 && fabs(_lotY - Y1) < 1) k5 = 0.1; //#1
 				if (fabs(_lotX - X2) < 1 && fabs(_lotY - Y2) < 1) k4 = 1.0201; //#2 
@@ -338,7 +359,18 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 		}
 		else if (isStartLeftShift) {
 			printf(" *test8* ");
-			float k7 = 1, k8 = 0.0, k9 = 4, k10 = 2.3;
+			float k7 = 1, k8 = 0.0, k9 = 4, k10 = 2.3;//3.5、1.5???ldx
+			/*
+			if (89 < CircleFoot.r && CircleFoot.r < 91) {
+				k10 = 2.3;
+			}
+			else if (99 < CircleFoot.r && CircleFoot.r < 101) {
+				k10 = 1.779;
+			}
+			else if (149 < CircleFoot.r && CircleFoot.r < 150) {
+				k10 = 2.3;
+			}
+			*/
 			//*cmdSteer = (-k9 * atan2(_midline[20][0] - _width * k8 - 2.5, _midline[20][1])) / 3.14;
 			/*
 			if (fabs(_lotX - X1) < 1 && fabs(_lotY - Y1) < 1) {
@@ -364,6 +396,17 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 			}
 			*/
 			*cmdAcc = 0.2;
+			/*
+			if (89 < CircleFoot.r && CircleFoot.r < 91) {
+				//to do
+			}
+			else if (99 < CircleFoot.r && CircleFoot.r < 101) {
+				*cmdAcc = 0.18;
+			}
+			else if (149 < CircleFoot.r && CircleFoot.r < 150) {
+				//to do
+			}
+			*/
 			*cmdSteer = (-k9 * atan2(_midline[20][0] - _width * k8 - k10, _midline[20][1])) / 3.14;
 			*cmdGear = 2;
 			*cmdBrake = 0;
