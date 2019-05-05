@@ -2,8 +2,8 @@
 	 Copyright (C) 2019
 	 All rights reserved
 	 file : driver_parking.cpp
-	 description :赛道判断：CircleFoot.r（隐晦的）
-	 version: 1.1.7
+	 description :
+	 version: 1.1.8
 	 modified by Lu at  May/5/2019 10:28
 	 https://github.com/henry87653/Engineering-Technological-Innovation-4D
   ***************************************************************************/
@@ -183,78 +183,6 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 	CircleFar = getR(_midline[70][0], _midline[70][1], _midline[90][0], _midline[90][1], _midline[110][0], _midline[110][1]);*/
 	CircleFoot = getR(_midline[0][0], _midline[0][1], _midline[1][0], _midline[1][1], _midline[2][0], _midline[2][1]);
 
-	//助教-未完成停车时
-	/*
-	if ( flagt == 1 ){//泊车完成，猛冲倒车，出车位
-		printf("  test1  ");
-		*cmdAcc = 1;
-		*cmdBrake = 0;
-		*cmdGear = -1;
-		*cmdSteer = (_yaw -atan2( _midline[10][0]+_width/3,_midline[10][1]))/ PI;//ldx:we can modify?
-		//if (distance > 12) flagt = 0;
-	}else
-	{
-		if ((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 0.5 ) 
-		{    
-			printf("  test2  ");
-			//用车速判断是否完成泊车//0~0.5
-			*cmdSteer = 20*(_lotAngle -_caryaw + PI)/ PI;//ldx:we can modify? eg 15 *  // + PI
-			if(*cmdSteer > 1)
-			    *cmdSteer = 1;
-			if( _speed < 0.01){
-			    *bFinished = true;
-				flagt = 1;//泊车完成标志flagt = 1
-			}
-			else
-				{*cmdBrake = 0.1;*cmdGear = 1;*cmdAcc = 0;}
-			flag = 1; 
-		}
-		else if( ((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 10)&& ( flagt ==2 )) 
-		{ 
-			printf("  test3  ");
-			//0.5~10
-			//接近停车位时，控制车的朝向与车位一致，速度控制在2
-			//*cmdSteer = 0;
-			*cmdSteer = 5*(_lotAngle -_caryaw + PI)/ PI;//ldx:we can modify? eg 15 *
-			if( _speed > 2 ){*cmdBrake = 0.1;*cmdGear = 1;*cmdAcc = 0;}
-			else if(_speed >0.07){*cmdBrake = 0;*cmdGear = 1;*cmdAcc = 0.1;}
-			else{*bFinished = true;flagt=1; }//ldx: *bFinished = true 明显有问题，要注释掉?
-			flag = 2;
-		} 
-		else if (((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 500 && dist <7.2)&&(flagt!=2))
-		{
-			printf("  test4  ");
-			//
-			//较接近停车位时，给一个大的转向，速度控制在10			
-		    *cmdSteer = 1;
-			if( _speed > 10 ){*cmdBrake = 0.2;*cmdGear = 1;*cmdAcc = 0;}
-			else{*cmdBrake = 0;*cmdGear = 1;*cmdAcc = 0.1;}
-			if (fabs(fabs(_caryaw)-fabs(_lotAngle))<0.015){
-				flagt = 2;
-			}
-			flag = 3;
-		} 
-		else if ((_carX-_lotX) * (_carX - _lotX) + (_carY - _lotY) * (_carY - _lotY) < 5000) 
-		{ 
-			printf("  test5  ");
-			//到一定范围时，将车子调整至道路右侧，增加转弯半径，速度控制在15
-			*cmdSteer = (_yaw -atan2( _midline[10][0]+_width/3,_midline[10][1]))/ PI;
-			if( _speed > 15 ){*cmdBrake = 0.2;*cmdGear = 1;*cmdAcc = 0;}
-			else{*cmdBrake = 0;*cmdGear = 1;*cmdAcc = 0.1;}
-			flag = 4;
-		}
-		else
-		{
-			printf("  test6  ");
-			//其它路段按巡线方式行驶
-			*cmdAcc = 1;//油门给100%
-		    *cmdBrake = 0;//无刹车
-		    *cmdSteer = (_yaw -8*atan2( _midline[30][0],_midline[30][1]))/ PI;//设定舵机方向//ldx: we can modify? ex. midline[10]
-		    *cmdGear = 1;//档位始终挂1
-			flag = 5;
-	    }
-	}*/
-
 	//Liu-未完成停车时
 	if (!*bFinished) {
 		if (isStop) {
@@ -269,7 +197,7 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 		else if (isBackOff) {
 			printf(" *test2* ");
 			float k1 = 5.61, k2 = 25, k3 = 4;//k2 = 24;;5.605095541
-			/*
+			
 			if (89 < CircleFoot.r && CircleFoot.r < 91) {
 				k1 = 5.605095541; k2 = 25; k3 = 4;
 			}
@@ -279,7 +207,7 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 			else if (149 < CircleFoot.r && CircleFoot.r < 150) {
 				k1 = 5.605095541; k2 = 25; k3 = 4;
 			}
-			*/
+			
 			if (fabs(vertParkdist) > 0.5)k3 = 2;
 			*cmdSteer = -k1 * angle - k2 * avgAngle / 3.14 - 1.404*(vertParkdist)-1.872*avgPark;
 			/*if (fabs(_lotX - X1) < 1 && fabs(_lotY - Y1) < 1) {//#1
@@ -332,7 +260,7 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 			if (!isBackOff && (isFirstStop || fabs(angle) < 0.3)) {
 				printf(" *test7* ");
 				float k4 = 1.0, k5 = 0.2, k6 = 0.04;//modified
-				/*
+				
 				if (89 < CircleFoot.r && CircleFoot.r < 91) {
 					k4 = 1.0; k5 = 0.8998; k6 = 0.04;
 				}
@@ -342,7 +270,7 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 				else if (149 < CircleFoot.r && CircleFoot.r < 150) {
 					k4 = 1.05; k5 = 0.2; k6 = 0.04;
 				}
-				*/
+				
 				/*
 				if (fabs(_lotX - X1) < 1 && fabs(_lotY - Y1) < 1) k5 = 0.1; //#1
 				if (fabs(_lotX - X2) < 1 && fabs(_lotY - Y2) < 1) k4 = 1.0201; //#2 
@@ -360,7 +288,7 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 		else if (isStartLeftShift) {
 			printf(" *test8* ");
 			float k7 = 1, k8 = 0.0, k9 = 4, k10 = 2.3;//3.5、1.5???ldx
-			/*
+			
 			if (89 < CircleFoot.r && CircleFoot.r < 91) {
 				k10 = 2.3;
 			}
@@ -370,7 +298,7 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 			else if (149 < CircleFoot.r && CircleFoot.r < 150) {
 				k10 = 2.3;
 			}
-			*/
+			
 			//*cmdSteer = (-k9 * atan2(_midline[20][0] - _width * k8 - 2.5, _midline[20][1])) / 3.14;
 			/*
 			if (fabs(_lotX - X1) < 1 && fabs(_lotY - Y1) < 1) {
@@ -396,7 +324,7 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 			}
 			*/
 			*cmdAcc = 0.2;
-			/*
+			
 			if (89 < CircleFoot.r && CircleFoot.r < 91) {
 				//to do
 			}
@@ -406,7 +334,7 @@ static void userDriverSetParam (bool* bFinished, float* cmdAcc, float* cmdBrake,
 			else if (149 < CircleFoot.r && CircleFoot.r < 150) {
 				//to do
 			}
-			*/
+			
 			*cmdSteer = (-k9 * atan2(_midline[20][0] - _width * k8 - k10, _midline[20][1])) / 3.14;
 			*cmdGear = 2;
 			*cmdBrake = 0;
